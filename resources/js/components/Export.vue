@@ -18,7 +18,7 @@
                 <el-button type="primary" v-on:click="exportNotReported">导出未填人员</el-button>
             </el-form-item>
         </el-form>
-        <el-form v-else label-width="80px" size="small" v-loading="isLoading" v-on:submit.native.prevent="authenticate">
+        <el-form style="margin: 8px 8px 8px 8px;" v-else label-width="80px" size="small" v-loading="isLoading" v-on:submit.native.prevent="authenticate">
             <el-form-item label="访问密码">
                 <el-input type="password" v-model="password"/>
             </el-form-item>
