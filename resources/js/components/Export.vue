@@ -1,7 +1,7 @@
 <template>
     <div>
         <page-title title="导出"/>
-        <el-form v-if="authenticated" label-width="80px" size="small" v-loading="isLoading">
+        <el-form style="margin: 8px 8px 8px 8px;" v-if="authenticated" label-width="80px" size="small" v-loading="isLoading">
             <el-form-item label="日期">
                 <el-date-picker
                     v-model="date"
