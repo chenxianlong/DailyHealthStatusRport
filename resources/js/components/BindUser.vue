@@ -35,7 +35,7 @@
                 axios.post(laravelRoute("users.bind"), {idCardNo: this.id_card_no}).then((response) => {
                     let data = response.data;
                     if (data.result) {
-                        this.$confirm("姓名：" + data.data.name).then(() => {
+                        if (confirm("姓名：" + data.data.name)) {
                             axios.post(laravelRoute("users.bind"), {idCardNo: this.id_card_no, name: data.data.name}).then((response) => {
                                 let data = response.data;
                                 if (data.result) {
@@ -43,7 +43,7 @@
                                         message: '身份证绑定成功',
                                         type: 'success'
                                     });
-                                    this.$router.push("/healthReport");
+                                    this.$router.push("/healthStatus/daily");
                                 } else {
                                     this.$message.error(data.message);
                                 }
@@ -51,10 +51,10 @@
                                 this.$message.error(error.toString());
                             }).then(() => {
                                 this.isLoading = false;
-                            })
-                        }).catch(() => {
+                            });
+                        } else {
                             this.isLoading = false;
-                        });
+                        }
                     } else {
                         this.$message.error(data.message);
                         this.isLoading = false;

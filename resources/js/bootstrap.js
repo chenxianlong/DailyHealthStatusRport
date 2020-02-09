@@ -123,7 +123,7 @@ Vue.mixin({
         },
         $axiosErrorHandler: function (error, app, varName) {
             console.log(error);
-            let setErrors = this.$getErrorSetter(app);
+            let setErrors = this.$getErrorSetter(app, varName);
             if (error.response) {
                 this.$responseErrorHandler(error.response, setErrors);
             } else {
@@ -131,7 +131,7 @@ Vue.mixin({
             }
         },
         $responseErrorHandler: function (response, app, varName) {
-            let setErrors = this.$getErrorSetter(app);
+            let setErrors = this.$getErrorSetter(app, varName);
             if (response.data.hasOwnProperty("errors")) {
                 setErrors(response.data.errors);
             } else if (response.data.hasOwnProperty("message")) {

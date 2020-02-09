@@ -12,17 +12,20 @@ use \Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware(App\Http\Middleware\WechatWork\AuthenticatedRequired::class . ":1")->group(function () {
+Route::middleware(App\Http\Middleware\WechatWork\AuthenticatedRequired::class . ":" . env("HR_APPLICATION_ID"))->group(function () {
     Route::get('/', "SPAController");
-    Route::get("/status", "HealthReportController@status");
-    Route::get("/healthReport", "HealthReportController@showForm");
-    Route::post("/healthReport", "HealthReportController@store");
     Route::get("/bind", "SPAController")->name("users.bind");
     Route::post("/bind", "UserController@bindIDCardNo");
-    Route::get("/export", "SPAController");
-    Route::get("/export/all", "ExportController@exportAll")->name("export.all");
-    Route::get("/export/notReported", "ExportController@exportNotReported")->name("export.notReported");
-    Route::get("/export/status", "ExportController@status")->name("export.status");
-    Route::post("/export/authenticate", "ExportController@authenticate")->name("export.authenticate");
+    Route::get("/healthStatus/daily", "UserDailyHealthStatusController@showForm");
+    Route::post("/healthStatus/daily", "UserDailyHealthStatusController@store");
+    Route::post("/healthCard", "UserHealthCardController@store");
+    Route::get("/status", "UserDailyHealthStatusController@status");
 });
+
+Route::get("/export", "SPAController");
+Route::post("/export/all", "ExportController@exportAll")->name("export.all");
+Route::post("/export/notReported", "ExportController@exportNotReported")->name("export.notReported");
+Route::get("/export/status", "ExportController@status")->name("export.status");
+Route::post("/export/authenticate", "ExportController@authenticate")->name("export.authenticate");
+Route::get("/export/download", "ExportController@download")->name("export.download");
 

@@ -10,8 +10,8 @@ const routes = [
         },
     },
     {
-        path: "/healthReport",
-        component: require("./components/HealthReportForm").default,
+        path: "/healthStatus/daily",
+        component: require("./components/DailyHealthStatusForm").default,
         meta: {
             title: "填写 - 健康上报",
         },

@@ -2,6 +2,12 @@
     <div>
         <page-title title="导出"/>
         <el-form style="margin: 8px 8px 8px 8px;" v-if="authenticated" label-width="80px" size="small" v-loading="isLoading">
+            <el-form-item>
+                <el-button type="primary" v-on:click="exportAll">导出所有报告</el-button>
+            </el-form-item>
+
+            <el-divider>OR</el-divider>
+
             <el-form-item label="日期">
                 <el-date-picker
                     v-model="date"
@@ -12,9 +18,6 @@
                         disabledDate: disabledDate,
                     }">
                 </el-date-picker>
-            </el-form-item>
-            <el-form-item>
-                <el-button type="primary" v-on:click="exportAll">导出所有报告</el-button>
                 <el-button type="primary" v-on:click="exportNotReported">导出未填人员</el-button>
             </el-form-item>
         </el-form>
@@ -67,18 +70,24 @@
                 })
             },
             exportAll: function () {
-                if (this.date.length === 0) {
-                    this.$errorMessage("请选择日期");
-                    return;
-                }
-                window.open(laravelRoute("export.all", {date: this.date}));
+                this.isLoading = true;
+                axios.post("/export/all").then(this.$apiResponseHandler((data) => {
+                    window.location.href = laravelRoute("export.download", {filename: data.filename, expireAt: data.expireAt, salt: data.salt, signature: data.signature});
+                })).catch(this.$axiosErrorHandler).then(() => {
+                    this.isLoading = false;
+                })
             },
             exportNotReported: function () {
                 if (this.date.length === 0) {
                     this.$errorMessage("请选择日期");
                     return;
                 }
-                window.open(laravelRoute("export.notReported", {date: this.date}));
+                this.isLoading = true;
+                axios.post("/export/notReported", {date: this.date}).then(this.$apiResponseHandler((data) => {
+                    window.location.href = laravelRoute("export.download", {filename: data.filename, expireAt: data.expireAt, salt: data.salt, signature: data.signature});
+                })).catch(this.$axiosErrorHandler).then(() => {
+                    this.isLoading = false;
+                });
             },
         },
     }
