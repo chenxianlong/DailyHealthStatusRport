@@ -92,7 +92,7 @@
             exportAll: function () {
                 this.isLoading = true;
                 axios.post("/export/all", {type: this.exportReportedType}).then(this.$apiResponseHandler((data) => {
-                    window.location.href = laravelRoute("export.download", {filename: data.filename, expireAt: data.expireAt, salt: data.salt, signature: data.signature});
+                    window.location.href = laravelRoute("export.download", {filename: data.filename, expireAt: data.expireAt, userId: data.userId, salt: data.salt, signature: data.signature});
                 })).catch(this.$axiosErrorHandler).then(() => {
                     this.isLoading = false;
                 })
@@ -104,7 +104,7 @@
                 }
                 this.isLoading = true;
                 axios.post("/export/notReported", {date: this.date, type: this.exportNotReportedType}).then(this.$apiResponseHandler((data) => {
-                    window.location.href = laravelRoute("export.download", {filename: data.filename, expireAt: data.expireAt, salt: data.salt, signature: data.signature});
+                    window.location.href = laravelRoute("export.download", {filename: data.filename, expireAt: data.expireAt, userId: data.userId, salt: data.salt, signature: data.signature});
                 })).catch(this.$axiosErrorHandler).then(() => {
                     this.isLoading = false;
                 });

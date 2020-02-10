@@ -8,6 +8,7 @@ use App\UserDailyHealthStatus;
 use App\UserHealthCard;
 use App\UserHealthReports;
 use App\Utils\Views;
+use App\WeChatWork\SessionUtils;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -54,7 +55,7 @@ class ExportController extends Controller
         ]);
     }
 
-    public function exportAll()
+    public function exportAll(SessionUtils $sessionUtils)
     {
         if (!$this->request->session()->get("export.authenticated", false)) {
             abort(403);
@@ -206,8 +207,9 @@ EOF
         return Views::successAPIResponse([
             "filename" => $filename,
             "expireAt" => $expireAt = (time() + 600),
+            "userId" => $sessionUtils->getUser()->id,
             "salt" => $salt = base64_encode(random_bytes(8)),
-            "signature" => sha1($filename . $expireAt . $salt . env("HR_EXPORT_PASSWORD")),
+            "signature" => sha1($filename . $expireAt . $sessionUtils->getUser()->id . $salt . env("HR_EXPORT_PASSWORD")),
         ]);
             response($fullPageContent)
                 ->header("Cache-Control", "no-cache, no-store, must-revalidate")
@@ -216,7 +218,7 @@ EOF
             ;
     }
 
-    public function exportNotReported()
+    public function exportNotReported(SessionUtils $sessionUtils)
     {
         if (!$this->request->session()->get("export.authenticated", false)) {
             abort(403);
@@ -292,8 +294,9 @@ EOF
         return Views::successAPIResponse([
             "filename" => $filename,
             "expireAt" => $expireAt = (time() + 600),
+            "userId" => $sessionUtils->getUser()->id,
             "salt" => $salt = base64_encode(random_bytes(8)),
-            "signature" => sha1($filename . $expireAt . $salt . env("HR_EXPORT_PASSWORD")),
+            "signature" => sha1($filename . $expireAt . $sessionUtils->getUser()->id . $salt . env("HR_EXPORT_PASSWORD")),
         ]);
         return
             response($fullPageContent)
@@ -305,7 +308,7 @@ EOF
 
     public function download()
     {
-        if (!hash_equals(sha1($this->request->filename . $this->request->expireAt . $this->request->salt . env("HR_EXPORT_PASSWORD")), $this->request->signature)) {
+        if (!hash_equals(sha1($this->request->filename . $this->request->expireAt . $this->request->userId . $this->request->salt . env("HR_EXPORT_PASSWORD")), $this->request->signature)) {
             abort(403, "参数验签不通过");
         }
         if (intval($this->request->expireAt) < time()) {
