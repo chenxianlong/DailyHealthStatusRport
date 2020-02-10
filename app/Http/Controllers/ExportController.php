@@ -49,7 +49,7 @@ class ExportController extends Controller
         $this->request->session()->put("export.authenticated", true);
         return Views::successAPIResponse([
             "authenticated" => true,
-            "availableDates" => UserHealthReports::query()->groupBy("reported_date")->pluck("reported_date", "reported_date"),
+            "availableDates" => UserDailyHealthStatus::query()->groupBy("reported_date")->pluck("reported_date", "reported_date"),
         ]);
     }
 
@@ -152,24 +152,31 @@ EOF
                 $row .= "<td class='text' rowspan='2'></td>";
             }
 
-            $secondRow = "<tr>";
+            $selfRow1Columns = "";
+            $familyRow1Columns = "";
+            $selfRow2Columns = "";
+            $familyRow2Columns = "";
             foreach ($availableDates as $date) {
                 if ($statusesKeyByDate->has($date)) {
                     $status = $statusesKeyByDate->get($date);
-                    $row .= "<td class='text'>". ($status->self_status ? "异常" : "正常") ."</td>";
-                    $secondRow .= "<td class='text'>". htmlentities($status->self_status_details) ."</td>";
-                    $row .= "<td class='text'>". ($status->family_status ? "异常" : "正常") ."</td>";
-                    $secondRow .= "<td class='text'>". htmlentities($status->family_status_details) ."</td>";
+                    $selfRow1Columns .= "<td class='text'>". ($status->self_status ? "异常" : "正常") ."</td>";
+                    $selfRow2Columns .= "<td class='text'>". htmlentities($status->self_status_details) ."</td>";
+                    $familyRow1Columns .= "<td class='text'>". ($status->family_status ? "异常" : "正常") ."</td>";
+                    $familyRow2Columns .= "<td class='text'>". htmlentities($status->family_status_details) ."</td>";
                 } else {
-                    $row .= "<td class='text'></td>";
-                    $secondRow .= "<td class='text'></td>";
-                    $row .= "<td class='text'></td>";
-                    $secondRow .= "<td class='text'></td>";
+                    $selfRow1Columns .= "<td class='text'></td>";
+                    $selfRow2Columns .= "<td class='text'></td>";
+                    $familyRow1Columns .= "<td class='text'></td>";
+                    $familyRow2Columns .= "<td class='text'></td>";
                 }
             }
-            $secondRow .= "</tr>";
             fwrite($fp, $row);
-            fwrite($fp, $secondRow);
+            fwrite($fp, $selfRow1Columns);
+            fwrite($fp, $familyRow1Columns);
+            fwrite($fp, "</tr><tr>");
+            fwrite($fp, $selfRow2Columns);
+            fwrite($fp, $familyRow2Columns);
+            fwrite($fp, "</tr>");
         }
 
         fwrite($fp, <<<EOF
