@@ -17,6 +17,7 @@ class CreateUsersTable extends Migration
             $table->bigIncrements('id');
             $table->string('id_card_no', 191)->unique();
             $table->string('name');
+            $table->string('department', 191)->index()->nullable();
             $table->tinyInteger('type')->index();
             $table->string('open_id', 191)->nullable()->unique();
             $table->string('user_id', 191)->nullable()->unique();

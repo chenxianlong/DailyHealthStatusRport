@@ -75,11 +75,11 @@ class ExportController extends Controller
 
         $dateCount = count($availableDates);
 
-        $userDailyHealthStatusesQueryBuilder = UserDailyHealthStatus::query();
+        $userDailyHealthStatusesQueryBuilder = UserDailyHealthStatus::query()->join("users", "user_daily_health_statuses.user_id", "=", "users.id");
         if ($this->request->type != -1) {
-            $userDailyHealthStatusesQueryBuilder->join("users", "user_daily_health_statuses.user_id", "=", "users.id")->where("users.type", $this->request->type);
+            $userDailyHealthStatusesQueryBuilder->where("users.type", $this->request->type);
         }
-        $userDailyHealthStatuses = $userDailyHealthStatusesQueryBuilder->select("user_daily_health_statuses.*")->get()->groupBy("user_id");
+        $userDailyHealthStatuses = $userDailyHealthStatusesQueryBuilder->select(["user_daily_health_statuses.*", "users.name", "users.department", "users.type", "users.id_card_no"])->orderBy("users.id")->orderBy("users.department")->get()->groupBy("user_id");
 
         $filename = "all-" . time() . mt_rand(100000000, 999999999) . ".xls";
         $filePath = $this->storeDirectory . $filename;
@@ -105,7 +105,7 @@ EOF
 <thead>
 <tr>
     <th rowspan="2">姓名</th>
-    <th rowspan="2">身份证号码</th>
+    <th rowspan="2">部门/班级</th>
     <th rowspan="2">联系电话</th>
     <th rowspan="2">现居住地址</th>
     <th rowspan="2">曾前往疫情防控重点地区</th>
@@ -140,14 +140,11 @@ EOF
              * @var Collection $statuses
              */
             $statusesKeyByDate = $statuses->keyBy("reported_date");
-            $user = User::query()->find($userId);
-            if (!$user) {
-                continue;
-            }
+            $firstStatus = $statuses->first();
             $userHealthCard = UserHealthCard::query()->find($userId);
             $row = "<tr>";
-            $row .= "<td class='text' rowspan='2'>". htmlentities($user->name) ."</td>";
-            $row .= "<td class='text' rowspan='2'>". $user->id_card_no ."</td>";
+            $row .= "<td class='text' rowspan='2'>". htmlentities($firstStatus->name) ."</td>";
+            $row .= "<td class='text' rowspan='2'>". htmlentities($firstStatus->department) ."</td>";
             if ($userHealthCard) {
                 $row .= "<td class='text' rowspan='2'>". $userHealthCard->phone ."</td>";
                 $row .= "<td class='text' rowspan='2'>". $userHealthCard->address ."</td>";
@@ -268,7 +265,7 @@ EOF
 <thead>
 <tr>
     <th>姓名</th>
-    <th>身份证号码</th>
+    <th>部门/班级</th>
 </tr>
 </thead>
 <tbody>
@@ -277,7 +274,7 @@ EOF
 
         foreach ($notReportedUsers as $user) {
             fwrite($fp, "<tr>");
-            fwrite($fp, "<td class='text'>". $user->name ."</td><td class='text'>". $user->id_card_no ."</td>");
+            fwrite($fp, "<td class='text'>". $user->name ."</td><td class='text'>". $user->department ."</td>");
             fwrite($fp, "</tr>");
         }
 

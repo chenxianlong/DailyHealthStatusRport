@@ -3,25 +3,26 @@
 namespace App\Console\Commands;
 
 use App\User;
+use App\WeChatWorkUsers;
 use Box\Spout\Common\Entity\Cell;
 use Box\Spout\Reader\Common\Creator\ReaderEntityFactory;
 use Illuminate\Console\Command;
 
-class UserImport extends Command
+class WeChatWorkUserImport extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'user:import {filePath}';
+    protected $signature = 'ww:user:import {filePath}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Import user';
+    protected $description = 'Import WeChatWork users';
 
     /**
      * Create a new command instance.
@@ -51,24 +52,19 @@ class UserImport extends Command
                  */
                 $cells = $row->getCells();
                 $name = trim($cells[0]->getValue());
-                $idCardNo = trim($cells[1]->getValue());
-                $idCardNo = str_replace([
-                    "\"",
-                    "'",
-                    "“",
-                    "‘",
-                ], "", $idCardNo);
+                $userId = trim($cells[1]->getValue());
                 $department = trim($cells[2]->getValue());
-                $type = $cells[3]->getValue();
+                $gender = trim($cells[3]->getValue());
+                $phone = trim($cells[4]->getValue());
 
-                if ($name === "" || is_null($name) || $idCardNo === "" || is_null($idCardNo) || $type === "" || is_null($type)) {
-                    $this->error($index . ": " . $name . " " . $idCardNo);
-                    continue;
-                }
-
-                User::query()->firstOrCreate([
-                    "id_card_no" => $idCardNo,
-                ], ["name" => $name, "department" => $department, "type" => $type]);
+                WeChatWorkUsers::query()->firstOrCreate([
+                    "user_id" => $userId,
+                ], [
+                    "name" => $name,
+                    "department" => $department,
+                    "gender" => $gender,
+                    "phone" => $phone,
+                ]);
                 // $this->info($name . " " . $idCardNo . " " . $type);
             }
         }

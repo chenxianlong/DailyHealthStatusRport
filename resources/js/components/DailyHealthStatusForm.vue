@@ -24,7 +24,7 @@
                     </el-form-item>
 
                     <el-form-item v-if="form.self_status === 1" label="自身异常症状" required>
-                        <el-input v-model="form.self_status_details" type="textarea" maxlength="255" show-word-limit/>
+                        <el-input v-model="form.self_status_details" type="textarea" placeholder="体温，咳嗽，气促等状态" maxlength="255" show-word-limit/>
                     </el-form-item>
 
                     <el-form-item label="家庭成员健康状况" required>
@@ -35,7 +35,7 @@
                     </el-form-item>
 
                     <el-form-item v-if="form.family_status === 1" label="家庭成员异常症状" required>
-                        <el-input v-model="form.family_status_details" type="textarea" maxlength="255" show-word-limit/>
+                        <el-input v-model="form.family_status_details" type="textarea" placeholder="体温，咳嗽，气促等状态" maxlength="255" show-word-limit/>
                     </el-form-item>
 
                     <alert type="error" title="错误" :messages="errors"/>
@@ -63,7 +63,7 @@
                         <el-input v-model="healthCardForm.phone" type="tel"/>
                     </el-form-item>
 
-                    <el-form-item label="现居住地址" required>
+                    <el-form-item label="现居住地址（填报当日居住地址，具体到门牌号）" required>
                         <el-input v-model="healthCardForm.address" type="textarea" maxlength="512" show-word-limit/>
                     </el-form-item>
 
