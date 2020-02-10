@@ -75,7 +75,11 @@ class ExportController extends Controller
 
         $dateCount = count($availableDates);
 
-        $userDailyHealthStatuses = UserDailyHealthStatus::all()->groupBy("user_id");
+        $userDailyHealthStatusesQueryBuilder = UserDailyHealthStatus::query();
+        if ($this->request->type != -1) {
+            $userDailyHealthStatusesQueryBuilder->join("users", "user_daily_health_statuses.user_id", "=", "users.id")->where("users.type", $this->request->type);
+        }
+        $userDailyHealthStatuses = $userDailyHealthStatusesQueryBuilder->select("user_daily_health_statuses.*")->get()->groupBy("user_id");
 
         $filename = "all-" . time() . mt_rand(100000000, 999999999) . ".xls";
         $filePath = $this->storeDirectory . $filename;

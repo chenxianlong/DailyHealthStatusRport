@@ -1,15 +1,30 @@
 <template>
     <div>
         <page-title title="导出"/>
-        <el-form style="margin: 8px 8px 8px 8px;" v-if="authenticated" label-width="80px" size="small" v-loading="isLoading">
+        <el-form style="margin: 8px 8px 8px 8px;" v-if="authenticated" label-width="80px" size="small" v-on:submit.native.prevent="() => {}" v-loading="isLoading">
+            <el-form-item label="人员类型">
+                <el-radio-group v-model="exportReportedType">
+                    <el-radio :label="-1">所有人员</el-radio>
+                    <el-radio :label="1">教职工</el-radio>
+                    <el-radio :label="0">学生</el-radio>
+                    <el-radio :label="2">后勤</el-radio>
+                </el-radio-group>
+            </el-form-item>
+
             <el-form-item>
-                <el-button type="primary" v-on:click="exportAll(-1)">导出所有报告</el-button>
-                <el-button type="primary" v-on:click="exportAll(1)">导出教职工报告</el-button>
-                <el-button type="primary" v-on:click="exportAll(0)">导出学生报告</el-button>
-                <el-button type="primary" v-on:click="exportAll(2)">导出后勤报告</el-button>
+                <el-button type="primary" v-on:click="exportAll">导出报告</el-button>
             </el-form-item>
 
             <el-divider>OR</el-divider>
+
+            <el-form-item label="人员类型">
+                <el-radio-group v-model="exportNotReportedType">
+                    <el-radio :label="-1">所有人员</el-radio>
+                    <el-radio :label="1">教职工</el-radio>
+                    <el-radio :label="0">学生</el-radio>
+                    <el-radio :label="2">后勤</el-radio>
+                </el-radio-group>
+            </el-form-item>
 
             <el-form-item label="日期">
                 <el-date-picker
@@ -21,10 +36,7 @@
                         disabledDate: disabledDate,
                     }">
                 </el-date-picker>
-                <el-button type="primary" v-on:click="exportNotReported(-1)">导出未填人员</el-button>
-                <el-button type="primary" v-on:click="exportNotReported(1)">导出未填职工</el-button>
-                <el-button type="primary" v-on:click="exportNotReported(0)">导出未填学生</el-button>
-                <el-button type="primary" v-on:click="exportNotReported(2)">导出未填后勤</el-button>
+                <el-button type="primary" v-on:click="exportNotReported">导出未填人员</el-button>
             </el-form-item>
         </el-form>
         <el-form style="margin: 8px 8px 8px 8px;" v-else label-width="80px" size="small" v-loading="isLoading" v-on:submit.native.prevent="authenticate">
@@ -49,6 +61,8 @@
                 authenticated: true,
                 availableDates: [],
                 password: "",
+                exportReportedType: -1,
+                exportNotReportedType: -1,
                 date: "",
             };
         },
@@ -75,21 +89,21 @@
                     this.isLoading = false;
                 })
             },
-            exportAll: function (type) {
+            exportAll: function () {
                 this.isLoading = true;
-                axios.post("/export/all", {type: type}).then(this.$apiResponseHandler((data) => {
+                axios.post("/export/all", {type: this.exportReportedType}).then(this.$apiResponseHandler((data) => {
                     window.location.href = laravelRoute("export.download", {filename: data.filename, expireAt: data.expireAt, salt: data.salt, signature: data.signature});
                 })).catch(this.$axiosErrorHandler).then(() => {
                     this.isLoading = false;
                 })
             },
-            exportNotReported: function (type) {
+            exportNotReported: function () {
                 if (this.date.length === 0) {
                     this.$errorMessage("请选择日期");
                     return;
                 }
                 this.isLoading = true;
-                axios.post("/export/notReported", {date: this.date, type: type}).then(this.$apiResponseHandler((data) => {
+                axios.post("/export/notReported", {date: this.date, type: this.exportNotReportedType}).then(this.$apiResponseHandler((data) => {
                     window.location.href = laravelRoute("export.download", {filename: data.filename, expireAt: data.expireAt, salt: data.salt, signature: data.signature});
                 })).catch(this.$axiosErrorHandler).then(() => {
                     this.isLoading = false;
