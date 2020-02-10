@@ -91,7 +91,7 @@ class UserDailyHealthStatusController extends Controller
             $this->validate($this->request, [
                 "family_status_details" => "required|max:255",
             ], [], [
-                "family_status_details" => "自身异常症状",
+                "family_status_details" => "家庭成员异常症状",
             ]);
             $values["family_status_details"] = $this->request->family_status_details;
         }
