@@ -170,21 +170,21 @@
                 if (data.hasHealthCard) {
                     this.$set(this.healthCardForm, "phone", data.hasHealthCard.phone);
                     this.$set(this.healthCardForm, "address", data.hasHealthCard.address);
-                    if (data.in_key_places_from) {
+                    if (data.hasHealthCard.in_key_places_from) {
                         this.$set(this.healthCardForm, "stayed_in_key_places", 1);
-                        this.$set(this.healthCardForm, "in_key_places_from", data.in_key_places_from.substr(0, 10));
+                        this.$set(this.healthCardForm, "in_key_places_from", data.hasHealthCard.in_key_places_from.substr(0, 10));
                     } else {
                         this.$set(this.healthCardForm, "stayed_in_key_places", 0);
                     }
-                    if (data.in_key_places_to) {
-                        this.$set(this.healthCardForm, "in_key_places_to", data.in_key_places_to.substr(0, 10));
+                    if (data.hasHealthCard.in_key_places_to) {
+                        this.$set(this.healthCardForm, "in_key_places_to", data.hasHealthCard.in_key_places_to.substr(0, 10));
                     }
-                    if (data.back_to_dongguan_at) {
-                        this.$set(this.healthCardForm, "back_to_dongguan_at", data.back_to_dongguan_at.substr(0, 10));
+                    if (data.hasHealthCard.back_to_dongguan_at) {
+                        this.$set(this.healthCardForm, "back_to_dongguan_at", data.hasHealthCard.back_to_dongguan_at.substr(0, 10));
                     }
-                    if (data.touched_high_risk_people_at) {
+                    if (data.hasHealthCard.touched_high_risk_people_at) {
                         this.$set(this.healthCardForm, "touched_high_risk_people", 1);
-                        this.$set(this.healthCardForm, "touched_high_risk_people_at", data.touched_high_risk_people_at.substr(0, 10));
+                        this.$set(this.healthCardForm, "touched_high_risk_people_at", data.hasHealthCard.touched_high_risk_people_at.substr(0, 10));
                     } else {
                         this.$set(this.healthCardForm, "touched_high_risk_people", 0);
                     }
