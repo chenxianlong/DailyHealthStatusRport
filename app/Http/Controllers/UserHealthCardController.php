@@ -6,6 +6,7 @@ use App\UserHealthCard;
 use App\Utils\Views;
 use App\WeChatWork\SessionUtils;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class UserHealthCardController extends Controller
 {
@@ -51,7 +52,10 @@ class UserHealthCardController extends Controller
             $values["touched_high_risk_people_at"] = $request->touched_high_risk_people_at;
         }
 
-        UserHealthCard::query()->create($values);
+        DB::transaction(function () use (&$values, $sessionUtils) {
+            UserHealthCard::query()->where("user_id", $sessionUtils->getUser()->id)->delete();
+            UserHealthCard::query()->create($values);
+        });
 
         return Views::successAPIResponse();
     }

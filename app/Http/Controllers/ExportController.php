@@ -11,6 +11,7 @@ use App\Utils\Views;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class ExportController extends Controller
@@ -59,7 +60,18 @@ class ExportController extends Controller
             abort(403);
         }
 
-        $availableDates = UserDailyHealthStatus::query()->groupBy("reported_date")->orderBy("reported_date")->pluck("reported_date")->toArray();
+        $this->validate($this->request, [
+            "type" => [
+                "required",
+                Rule::in([-1, 0, 1, 2]),
+            ],
+        ]);
+
+        $availableDatesQueryBuilder = UserDailyHealthStatus::query();
+        if ($this->request->type != -1) {
+            $availableDatesQueryBuilder->join("users", "user_daily_health_statuses.user_id", "=", "users.id")->where("users.type", $this->request->type);
+        }
+        $availableDates = $availableDatesQueryBuilder->groupBy("reported_date")->orderBy("reported_date")->pluck("reported_date")->toArray();
 
         $dateCount = count($availableDates);
 
@@ -91,7 +103,7 @@ EOF
     <th rowspan="2">姓名</th>
     <th rowspan="2">身份证号码</th>
     <th rowspan="2">联系电话</th>
-    <th rowspan="2">住址</th>
+    <th rowspan="2">现居住地址</th>
     <th rowspan="2">曾前往疫情防控重点地区</th>
     <th rowspan="2">前往时间</th>
     <th rowspan="2">离开时间</th>
@@ -205,11 +217,28 @@ EOF
 
     public function exportNotReported()
     {
-        $date = $this->request->date;
-        if (!$this->request->session()->get("export.authenticated", false) || !preg_match('/^[0-9]{4,4}-[0-9]{2,2}-[0-9]{2,2}$/', $date)) {
+        if (!$this->request->session()->get("export.authenticated", false)) {
             abort(403);
         }
-        $notReportedUsers = DB::select("SELECT * FROM `users` WHERE id NOT IN (SELECT user_id FROM `user_daily_health_statuses` WHERE reported_date = ?)", [$date]);
+
+        $this->validate($this->request, [
+            "date" => [
+                "required",
+                "date_format:Y-m-d",
+            ],
+            "type" => [
+                "required",
+                Rule::in([-1, 0, 1, 2]),
+            ],
+        ]);
+
+        $date = $this->request->date;
+
+        if ($this->request->type != -1) {
+            $notReportedUsers = DB::select("SELECT * FROM `users` WHERE id NOT IN (SELECT user_id FROM `user_daily_health_statuses` WHERE reported_date = ?) AND type = ?", [$date, $this->request->type]);
+        } else {
+            $notReportedUsers = DB::select("SELECT * FROM `users` WHERE id NOT IN (SELECT user_id FROM `user_daily_health_statuses` WHERE reported_date = ?)", [$date]);
+        }
 
         $filename = "not-reported-" . $date . "-" . time() . mt_rand(100000000, 999999999) . ".xls";
         $filePath = $this->storeDirectory . $filename;

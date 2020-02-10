@@ -1,6 +1,6 @@
 <template>
     <div>
-        <page-title title="填写"/>
+        <page-title title="返校教师员工健康卡填报"/>
         <div style="margin: 8px 8px 8px 8px" v-loading="isLoading">
             <slide-fade-transition>
                 <div v-if="todayReported" style="color: gray; text-align: center; font-size: 20px; padding-top: 80px;">
@@ -38,13 +38,19 @@
                         <el-input v-model="form.family_status_details" type="textarea" maxlength="255" show-word-limit/>
                     </el-form-item>
 
+                    <alert type="error" title="错误" :messages="errors"/>
+
                     <div style="color: red;">资料提交后无法修改，请谨慎填写！</div>
                     <br>
 
-                    <alert type="error" title="错误" :messages="errors"/>
+                    <el-form-item required>
+                        <el-checkbox v-model="confirm2"><span style="color: red;">本人承诺，如实填报该卡数据</span></el-checkbox>
+                    </el-form-item>
 
                     <el-form-item>
-                        <el-button style="width: 100%;" native-type="submit" type="primary" :disabled="isLoading">提交
+                        <el-button style="width: 100%;" native-type="submit" type="primary" :disabled="isLoading || confirm2 === false">
+                            <template v-if="confirm2">提交</template>
+                            <template v-else>请勾选“本人承诺，如实填报该卡数据”</template>
                         </el-button>
                     </el-form-item>
                 </el-form>
@@ -57,7 +63,7 @@
                         <el-input v-model="healthCardForm.phone" type="tel"/>
                     </el-form-item>
 
-                    <el-form-item label="住址" required>
+                    <el-form-item label="现居住地址" required>
                         <el-input v-model="healthCardForm.address" type="textarea" maxlength="512" show-word-limit/>
                     </el-form-item>
 
@@ -117,13 +123,17 @@
                         </el-date-picker>
                     </el-form-item>
 
-                    <div style="color: red;">资料提交后无法修改，请谨慎填写！</div>
-                    <br>
+                    <el-form-item required>
+                        <el-checkbox v-model="confirm1"><span style="color: red;">本人承诺，如实填报该卡数据</span></el-checkbox>
+                    </el-form-item>
 
                     <alert type="error" title="错误" :messages="errors"/>
 
                     <el-form-item>
-                        <el-button native-type="submit" type="primary" style="width: 100%;" :disabled="isLoading">提交</el-button>
+                        <el-button native-type="submit" type="primary" style="width: 100%;" :disabled="isLoading || confirm1 === false">
+                            <template v-if="confirm1">下一步</template>
+                            <template v-else>请勾选“本人承诺，如实填报该卡数据”</template>
+                        </el-button>
                     </el-form-item>
                 </el-form>
             </slide-fade-transition>
@@ -143,19 +153,42 @@
             return {
                 isLoading: false,
                 errors: [],
-                hasHealthCard: true,
+                hasHealthCard: false,
                 todayReported: false,
                 name: "",
                 form: {},
                 healthCardForm: {},
+                confirm1: false,
+                confirm2: false,
             };
         },
         created: function () {
             this.isLoading = true;
             axios.get("/status").then(this.$apiResponseHandler((data) => {
                 this.name = data.name;
-                this.hasHealthCard = data.hasHealthCard;
                 this.todayReported = data.todayReported;
+                if (data.hasHealthCard) {
+                    this.healthCardForm.phone = data.hasHealthCard.phone;
+                    this.healthCardForm.address = data.hasHealthCard.address;
+                    if (data.in_key_places_from) {
+                        this.healthCardForm.stayed_in_key_places = 1;
+                        this.healthCardForm.in_key_places_from = data.in_key_places_from.substr(0, 10);
+                    } else {
+                        this.healthCardForm.stayed_in_key_places = 0;
+                    }
+                    if (data.in_key_places_to) {
+                        this.healthCardForm.in_key_places_to = data.in_key_places_to.substr(0, 10);
+                    }
+                    if (data.back_to_dongguan_at) {
+                        this.healthCardForm.back_to_dongguan_at = data.back_to_dongguan_at.substr(0, 10);
+                    }
+                    if (data.touched_high_risk_people_at) {
+                        this.healthCardForm.touched_high_risk_people = 1;
+                        this.healthCardForm.touched_high_risk_people_at = data.touched_high_risk_people_at.substr(0, 10);
+                    } else {
+                        this.healthCardForm.touched_high_risk_people = 0;
+                    }
+                }
             })).catch((error) => {
                 this.$axiosErrorHandler(error, this, null);
             }).then(() => {

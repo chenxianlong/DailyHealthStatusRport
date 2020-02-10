@@ -56,7 +56,7 @@ class UserDailyHealthStatusController extends Controller
     {
         return Views::successAPIResponse([
             "name" => $sessionUtils->getUser()->name,
-            "hasHealthCard" => !is_null(UserHealthCard::query()->find($sessionUtils->getUser()->id)),
+            "hasHealthCard" => UserHealthCard::query()->find($sessionUtils->getUser()->id),
             "todayReported" => !is_null(UserDailyHealthStatus::query()->where("user_id", $sessionUtils->getUser()->id)->where("reported_date", date("Y-m-d"))->first()),
         ]);
     }

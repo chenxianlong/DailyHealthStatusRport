@@ -3,7 +3,10 @@
         <page-title title="导出"/>
         <el-form style="margin: 8px 8px 8px 8px;" v-if="authenticated" label-width="80px" size="small" v-loading="isLoading">
             <el-form-item>
-                <el-button type="primary" v-on:click="exportAll">导出所有报告</el-button>
+                <el-button type="primary" v-on:click="exportAll(-1)">导出所有报告</el-button>
+                <el-button type="primary" v-on:click="exportAll(1)">导出教职工报告</el-button>
+                <el-button type="primary" v-on:click="exportAll(0)">导出学生报告</el-button>
+                <el-button type="primary" v-on:click="exportAll(2)">导出后勤报告</el-button>
             </el-form-item>
 
             <el-divider>OR</el-divider>
@@ -18,7 +21,10 @@
                         disabledDate: disabledDate,
                     }">
                 </el-date-picker>
-                <el-button type="primary" v-on:click="exportNotReported">导出未填人员</el-button>
+                <el-button type="primary" v-on:click="exportNotReported(-1)">导出未填人员</el-button>
+                <el-button type="primary" v-on:click="exportNotReported(1)">导出未填职工</el-button>
+                <el-button type="primary" v-on:click="exportNotReported(0)">导出未填学生</el-button>
+                <el-button type="primary" v-on:click="exportNotReported(2)">导出未填后勤</el-button>
             </el-form-item>
         </el-form>
         <el-form style="margin: 8px 8px 8px 8px;" v-else label-width="80px" size="small" v-loading="isLoading" v-on:submit.native.prevent="authenticate">
@@ -69,21 +75,21 @@
                     this.isLoading = false;
                 })
             },
-            exportAll: function () {
+            exportAll: function (type) {
                 this.isLoading = true;
-                axios.post("/export/all").then(this.$apiResponseHandler((data) => {
+                axios.post("/export/all", {type: type}).then(this.$apiResponseHandler((data) => {
                     window.location.href = laravelRoute("export.download", {filename: data.filename, expireAt: data.expireAt, salt: data.salt, signature: data.signature});
                 })).catch(this.$axiosErrorHandler).then(() => {
                     this.isLoading = false;
                 })
             },
-            exportNotReported: function () {
+            exportNotReported: function (type) {
                 if (this.date.length === 0) {
                     this.$errorMessage("请选择日期");
                     return;
                 }
                 this.isLoading = true;
-                axios.post("/export/notReported", {date: this.date}).then(this.$apiResponseHandler((data) => {
+                axios.post("/export/notReported", {date: this.date, type: type}).then(this.$apiResponseHandler((data) => {
                     window.location.href = laravelRoute("export.download", {filename: data.filename, expireAt: data.expireAt, salt: data.salt, signature: data.signature});
                 })).catch(this.$axiosErrorHandler).then(() => {
                     this.isLoading = false;
