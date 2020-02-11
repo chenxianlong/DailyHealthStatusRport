@@ -27,6 +27,9 @@ class UserController extends Controller
 
         $idCardNo = $this->request->idCardNo;
         $user = User::query()->where("id_card_no", $idCardNo)->first();
+        if (is_null($user) && strlen($idCardNo) === 8) {
+            $user = User::query()->where("id_card_no", $idCardNo . "（台胞证）")->first();
+        }
         if (is_null($user)) {
             return ["result" => false, "message" => "此身份证号码不存在"];
         }
