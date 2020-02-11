@@ -3,7 +3,7 @@
         <page-title title="绑定证件号"/>
 
         <el-form style="margin: 8px 8px 8px 8px;" size="small" label-position="top" v-on:submit.native.prevent="onSubmit" v-loading="isLoading">
-            <el-form-item label="证件号码（如：身份证、台胞证）">
+            <el-form-item label="身份证号码或者其他有效证件号码（台胞证，护照等）">
                 <el-input v-model="id_card_no"/>
             </el-form-item>
 
