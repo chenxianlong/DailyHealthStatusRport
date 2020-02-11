@@ -31,24 +31,6 @@ class ExportController extends Controller
 
     public function status()
     {
-        if (!$this->request->session()->get("export.authenticated", false)) {
-            return Views::successAPIResponse([
-                "authenticated" => false,
-                "availableDates" => [],
-            ]);
-        }
-        return Views::successAPIResponse([
-            "authenticated" => true,
-            "availableDates" => UserDailyHealthStatus::query()->groupBy("reported_date")->pluck("reported_date", "reported_date"),
-        ]);
-    }
-
-    public function authenticate()
-    {
-        if (!password_verify($this->request->password, env("HR_EXPORT_PASSWORD"))) {
-            throw ValidationException::withMessages(["password" => "访问密码错误"]);
-        }
-        $this->request->session()->put("export.authenticated", true);
         return Views::successAPIResponse([
             "authenticated" => true,
             "availableDates" => UserDailyHealthStatus::query()->groupBy("reported_date")->pluck("reported_date", "reported_date"),
@@ -57,10 +39,6 @@ class ExportController extends Controller
 
     public function exportAll(SessionUtils $sessionUtils)
     {
-        if (!$this->request->session()->get("export.authenticated", false)) {
-            abort(403);
-        }
-
         $this->validate($this->request, [
             "type" => [
                 "required",
@@ -220,10 +198,6 @@ EOF
 
     public function exportNotReported(SessionUtils $sessionUtils)
     {
-        if (!$this->request->session()->get("export.authenticated", false)) {
-            abort(403);
-        }
-
         $this->validate($this->request, [
             "date" => [
                 "required",

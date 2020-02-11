@@ -20,11 +20,12 @@ Route::middleware(App\Http\Middleware\WechatWork\AuthenticatedRequired::class . 
     Route::post("/healthStatus/daily", "UserDailyHealthStatusController@store");
     Route::post("/healthCard", "UserHealthCardController@store");
     Route::get("/status", "UserDailyHealthStatusController@status");
-    Route::get("/export", "SPAController");
-    Route::post("/export/all", "ExportController@exportAll")->name("export.all");
-    Route::post("/export/notReported", "ExportController@exportNotReported")->name("export.notReported");
-    Route::get("/export/status", "ExportController@status")->name("export.status");
-    Route::post("/export/authenticate", "ExportController@authenticate")->name("export.authenticate");
+    Route::middleware(\App\Http\Middleware\ExportAuthenticate::class)->group(function () {
+        Route::get("/export", "SPAController");
+        Route::post("/export/all", "ExportController@exportAll")->name("export.all");
+        Route::post("/export/notReported", "ExportController@exportNotReported")->name("export.notReported");
+        Route::get("/export/status", "ExportController@status")->name("export.status");
+    });
 });
 
 Route::get("/export/download", "ExportController@download")->name("export.download");
