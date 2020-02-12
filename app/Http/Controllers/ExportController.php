@@ -122,52 +122,53 @@ EOF
             $firstStatus = $statuses->first();
             $userHealthCard = UserHealthCard::query()->find($userId);
             $row = "<tr>";
-            $row .= "<td class='text' rowspan='2'>". htmlentities($firstStatus->name) ."</td>";
-            $row .= "<td class='text' rowspan='2'>". htmlentities($firstStatus->department) ."</td>";
+            $row .= "<td class='text'>". htmlentities($firstStatus->name) ."</td>";
+            $row .= "<td class='text'>". htmlentities($firstStatus->department) ."</td>";
             if ($userHealthCard) {
-                $row .= "<td class='text' rowspan='2'>". $userHealthCard->phone ."</td>";
-                $row .= "<td class='text' rowspan='2'>". $userHealthCard->address ."</td>";
-                $row .= "<td class='text' rowspan='2'>". ($userHealthCard->in_key_places_from ? "是" : "否")  ."</td>";
-                $row .= "<td class='text' rowspan='2'>". $userHealthCard->in_key_places_from ."</td>";
-                $row .= "<td class='text' rowspan='2'>". $userHealthCard->in_key_places_to ."</td>";
-                $row .= "<td class='text' rowspan='2'>". $userHealthCard->back_to_dongguan_at ."</td>";
-                $row .= "<td class='text' rowspan='2'>". ($userHealthCard->touched_high_risk_people_at ? "是" : "否") ."</td>";
-                $row .= "<td class='text' rowspan='2'>". $userHealthCard->touched_high_risk_people_at ."</td>";
+                $row .= "<td class='text'>". $userHealthCard->phone ."</td>";
+                $row .= "<td class='text'>". $userHealthCard->address ."</td>";
+                $row .= "<td class='text'>". ($userHealthCard->in_key_places_from ? "是" : "否")  ."</td>";
+                $row .= "<td class='text'>". $userHealthCard->in_key_places_from ."</td>";
+                $row .= "<td class='text'>". $userHealthCard->in_key_places_to ."</td>";
+                $row .= "<td class='text'>". $userHealthCard->back_to_dongguan_at ."</td>";
+                $row .= "<td class='text'>". ($userHealthCard->touched_high_risk_people_at ? "是" : "否") ."</td>";
+                $row .= "<td class='text'>". $userHealthCard->touched_high_risk_people_at ."</td>";
             } else {
-                $row .= "<td class='text' rowspan='2'></td>";
-                $row .= "<td class='text' rowspan='2'></td>";
-                $row .= "<td class='text' rowspan='2'></td>";
-                $row .= "<td class='text' rowspan='2'></td>";
-                $row .= "<td class='text' rowspan='2'></td>";
-                $row .= "<td class='text' rowspan='2'></td>";
-                $row .= "<td class='text' rowspan='2'></td>";
-                $row .= "<td class='text' rowspan='2'></td>";
+                $row .= "<td class='text'></td>";
+                $row .= "<td class='text'></td>";
+                $row .= "<td class='text'></td>";
+                $row .= "<td class='text'></td>";
+                $row .= "<td class='text'></td>";
+                $row .= "<td class='text'></td>";
+                $row .= "<td class='text'></td>";
+                $row .= "<td class='text'></td>";
             }
 
             $selfRow1Columns = "";
             $familyRow1Columns = "";
-            $selfRow2Columns = "";
-            $familyRow2Columns = "";
             foreach ($availableDates as $date) {
                 if ($statusesKeyByDate->has($date)) {
                     $status = $statusesKeyByDate->get($date);
-                    $selfRow1Columns .= "<td class='text'>". ($status->self_status ? "异常" : "正常") ."</td>";
-                    $selfRow2Columns .= "<td class='text'>". htmlentities($status->self_status_details) ."</td>";
-                    $familyRow1Columns .= "<td class='text'>". ($status->family_status ? "异常" : "正常") ."</td>";
-                    $familyRow2Columns .= "<td class='text'>". htmlentities($status->family_status_details) ."</td>";
+                    if ($status->self_status) {
+                        $selfStatus = "异常：" . htmlentities($status->self_status_details);
+                    } else {
+                        $selfStatus = "正常";
+                    }
+                    $selfRow1Columns .= "<td class='text'>". $selfStatus ."</td>";
+                    if ($status->family_status) {
+                        $familyStatus = "异常：" . htmlentities($status->family_status_details);
+                    } else {
+                        $familyStatus = "正常";
+                    }
+                    $familyRow1Columns .= "<td class='text'>". $familyStatus ."</td>";
                 } else {
                     $selfRow1Columns .= "<td class='text'></td>";
-                    $selfRow2Columns .= "<td class='text'></td>";
                     $familyRow1Columns .= "<td class='text'></td>";
-                    $familyRow2Columns .= "<td class='text'></td>";
                 }
             }
             fwrite($fp, $row);
             fwrite($fp, $selfRow1Columns);
             fwrite($fp, $familyRow1Columns);
-            fwrite($fp, "</tr><tr>");
-            fwrite($fp, $selfRow2Columns);
-            fwrite($fp, $familyRow2Columns);
             fwrite($fp, "</tr>");
         }
 
