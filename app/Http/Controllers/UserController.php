@@ -33,9 +33,6 @@ class UserController extends Controller
         if (is_null($user)) {
             return ["result" => false, "message" => "此身份证号码不存在"];
         }
-        if (!empty($user->open_id) || !empty($user->user_id)) {
-            return ["result" => false, "message" => "此身份证号码已被另一微信号绑定"];
-        }
         if (empty($this->request->name)) {
             return Views::successAPIResponse([
                 "name" => $user->name,
