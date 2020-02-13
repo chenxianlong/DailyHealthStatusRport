@@ -33,20 +33,23 @@ class UserController extends Controller
         if (is_null($user)) {
             return ["result" => false, "message" => "此身份证号码不存在"];
         }
+        if (empty($openId)) {
+            if (!empty($user->user_id)) {
+                return ["result" => false, "message" => "此身份证号码已被另一微信号绑定"];
+            }
+        } else {
+            if (!empty($user->open_id)) {
+                return ["result" => false, "message" => "此身份证号码已被另一微信号绑定"];
+            }
+        }
         if (empty($this->request->name)) {
             return Views::successAPIResponse([
                 "name" => $user->name,
             ]);
         }
         if (empty($openId)) {
-            if (!empty($user->user_id)) {
-                return ["result" => false, "message" => "此身份证号码已被另一微信号绑定"];
-            }
             $user->update(["user_id" => $userId]);
         } else {
-            if (!empty($user->open_id)) {
-                return ["result" => false, "message" => "此身份证号码已被另一微信号绑定"];
-            }
             $user->update(["open_id" => $openId]);
         }
         $sessionUtils->setUser($user);
