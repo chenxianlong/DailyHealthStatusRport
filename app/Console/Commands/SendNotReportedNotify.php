@@ -47,13 +47,13 @@ class SendNotReportedNotify extends Command
             try {
                 if ($this->option("first")) {
                     $message = '尊敬的'. $user->name .' 您好，根据疫情防控有关文件的要求，从2月11日开始，我校每位教工必须每天如实填报“健康卡“，返校前至少要提供十四天的健康数据，每天只能当天填报一次。请选择下面的方式填报：
-1，点击本链接: http://2020.smart-ccdgut.com/healthStatus/daily 直接填报。
+1，点击本链接: https://2020.smart-ccdgut.com/healthStatus/daily 直接填报。
 2，点击下方“健康卡”菜单填报。
 如有问题请及时与本部门秘书联系，感谢你的支持与配合。';
                 } else {
                     $message = '尊敬的' . $user->name . '，您好，根据疫情防控有关文件的要求，从2月11日开始，我校每位教工必须每天如实填报“健康卡“，返校前至少要提供十四天的健康数据。
 系统检测到您今天还没有填报，请选择下面的方式填报：
-1，点击本链接: http://2020.smart-ccdgut.com/healthStatus/daily 直接填报。
+1，点击本链接: https://2020.smart-ccdgut.com/healthStatus/daily 直接填报。
 2，点击下方“健康卡”菜单填报。
 因为健康卡需要至少十四天的数据，请记得每天都要在此填报，如有问题请及时与本部门秘书联系，感谢你的支持与配合';
                 }
