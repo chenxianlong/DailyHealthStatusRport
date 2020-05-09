@@ -126,6 +126,12 @@ class HTTPServerAPI implements ServerAPI
         ]);
     }
 
+    public function updateUser(string $userId, array $values)
+    {
+        $values["userid"] = $userId;
+        return $this->sendAPIPostRequest("/cgi-bin/user/update", $values);
+    }
+
     public function sendMessage($msgtype, $message, $touser = null, $toparty = null, $totag = null): object
     {
         $message["touser"] = $touser ?? "";

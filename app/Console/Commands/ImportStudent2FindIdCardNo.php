@@ -2,27 +2,26 @@
 
 namespace App\Console\Commands;
 
-use App\User;
-use App\WeChatWorkUsers;
+use App\Student2FindIdCardNo;
 use Box\Spout\Common\Entity\Cell;
 use Box\Spout\Reader\Common\Creator\ReaderEntityFactory;
 use Illuminate\Console\Command;
 
-class WeChatWorkUserImport extends Command
+class ImportStudent2FindIdCardNo extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'ww:user:import {filePath}';
+    protected $signature = 'student:find:id-card-no:import {filePath}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Import WeChatWork users';
+    protected $description = 'Import students need to find id card no';
 
     /**
      * Create a new command instance.
@@ -44,30 +43,19 @@ class WeChatWorkUserImport extends Command
         $reader = ReaderEntityFactory::createReaderFromFile($filePath = $this->argument("filePath"));
 
         $reader->open($filePath);
-
         foreach ($reader->getSheetIterator() as $sheet) {
             foreach ($sheet->getRowIterator() as $index => $row) {
                 /**
                  * @var Cell[] $cells
                  */
                 $cells = $row->getCells();
-                $name = trim($cells[0]->getValue());
-                $userId = trim($cells[1]->getValue());
-                $department = trim($cells[4]->getValue());
-                $gender = trim($cells[5]->getValue());
-                $phone = trim($cells[6]->getValue());
-                $idCardNo = trim($cells[18]->getValue());
+                $no = $cells[1];
+                $name = $cells[2];
 
-                WeChatWorkUsers::query()->firstOrCreate([
-                    "user_id" => $userId,
-                ], [
+                Student2FindIdCardNo::query()->insert([
+                    "no" => $no,
                     "name" => $name,
-                    "department" => $department,
-                    "gender" => $gender,
-                    "phone" => $phone,
-                    "id_card_no" => $idCardNo,
                 ]);
-                // $this->info($name . " " . $idCardNo . " " . $type);
             }
         }
         return 0;

@@ -1,4 +1,5 @@
 const mix = require('laravel-mix');
+const CompressionPlugin = require('compression-webpack-plugin');
 
 /*
  |--------------------------------------------------------------------------
@@ -16,6 +17,28 @@ const stylesheetOutputPathPrefix = 'css/';
 
 if (mix.inProduction()) {
     mix.version();
+    mix.webpackConfig({
+        plugins: [
+            new CompressionPlugin({
+                filename: '[path].gz[query]',
+                algorithm: "gzip",
+                test: /\.(js|css|html|svg)$/,
+                compressionOptions: { level: 9 },
+                threshold: 10240,
+                minRatio: 0.8,
+                deleteOriginalAssets: false,
+            }),
+            new CompressionPlugin({
+                filename: '[path].br[query]',
+                algorithm: 'brotliCompress',
+                test: /\.(js|css|html|svg)$/,
+                compressionOptions: { level: 11 },
+                threshold: 10240,
+                minRatio: 0.8,
+                deleteOriginalAssets: false,
+            }),
+        ],
+    });
 } else {
     mix.setPublicPath('public/development');
     mix.setResourceRoot('/development');

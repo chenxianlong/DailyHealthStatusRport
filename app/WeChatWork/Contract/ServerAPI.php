@@ -33,6 +33,8 @@ interface ServerAPI
 
     public function getUser(string $userId): object;
 
+    public function updateUser(string $userId, array $values);
+
     public function sendMessage($msgtype, $message, $touser = null, $toparty = null, $totag = null): object;
 
     public function getDepartmentList($id = null): array;

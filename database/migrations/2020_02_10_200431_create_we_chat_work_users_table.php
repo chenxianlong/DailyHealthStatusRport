@@ -17,9 +17,10 @@ class CreateWeChatWorkUsersTable extends Migration
             $table->bigIncrements('id');
             $table->string('name')->index();
             $table->string('user_id')->unique();
-            $table->string('department');
+            $table->string('department')->index();
             $table->string('gender');
-            $table->string('phone')->nullable();
+            $table->string('phone')->index()->nullable();
+            $table->string('id_card_no')->index()->nullable();
         });
     }
 
