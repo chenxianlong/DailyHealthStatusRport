@@ -138,7 +138,8 @@
                     </template>
 
                     <el-form-item required>
-                        <el-checkbox v-model="confirm2"><span style="color: red;">本人郑重承诺：以上情况属实，不存在任何隐瞒的情况。如有不实，本人愿意承担相关责任。</span></el-checkbox>
+                        <span style="color: red;">本人郑重承诺：以上情况属实，不存在任何隐瞒的情况。如有不实，本人愿意承担相关责任。</span>
+                        <el-checkbox v-model="confirm2"><span style="color: red;">同意</span></el-checkbox>
                     </el-form-item>
 
                     <alert type="error" title="错误" :messages="errors"/>
