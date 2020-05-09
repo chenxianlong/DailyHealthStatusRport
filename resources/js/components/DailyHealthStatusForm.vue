@@ -93,12 +93,12 @@
 
                     <el-form-item label="目前，本人身体状况" required>
                         <el-radio-group v-model="form.self_status">
-                            <el-radio :label="0">健康，无症状</el-radio>
-                            <el-radio :label="1">发热（37.3度以上）</el-radio>
-                            <el-radio :label="2">咳嗽</el-radio>
-                            <el-radio :label="3">气促</el-radio>
-                            <el-radio :label="4">乏力</el-radio>
-                            <el-radio :label="5">其他症状</el-radio>
+                            <el-radio class="radio" :label="0">健康，无症状</el-radio>
+                            <el-radio class="radio" :label="1">发热（37.3度以上）</el-radio>
+                            <el-radio class="radio" :label="2">咳嗽</el-radio>
+                            <el-radio class="radio" :label="3">气促</el-radio>
+                            <el-radio class="radio" :label="4">乏力</el-radio>
+                            <el-radio class="radio" :label="5">其他症状</el-radio>
                         </el-radio-group>
                     </el-form-item>
 
@@ -108,12 +108,12 @@
 
                     <el-form-item label="同住家庭成员身体情况" required>
                         <el-radio-group v-model="form.family_status">
-                            <el-radio :label="0">健康，无症状</el-radio>
-                            <el-radio :label="1">发热（37.3度以上）</el-radio>
-                            <el-radio :label="2">咳嗽</el-radio>
-                            <el-radio :label="3">气促</el-radio>
-                            <el-radio :label="4">乏力</el-radio>
-                            <el-radio :label="5">其他症状</el-radio>
+                            <el-radio class="radio" :label="0">健康，无症状</el-radio>
+                            <el-radio class="radio" :label="1">发热（37.3度以上）</el-radio>
+                            <el-radio class="radio" :label="2">咳嗽</el-radio>
+                            <el-radio class="radio" :label="3">气促</el-radio>
+                            <el-radio class="radio" :label="4">乏力</el-radio>
+                            <el-radio class="radio" :label="5">其他症状</el-radio>
                         </el-radio-group>
                     </el-form-item>
 
@@ -254,5 +254,8 @@
 </script>
 
 <style scoped>
-
+    .radio {
+        margin-bottom: 10px;
+        display: block;
+    }
 </style>
