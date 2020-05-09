@@ -148,7 +148,7 @@
                         <el-button style="width: 100%;" native-type="submit" type="primary"
                                    :disabled="isLoading || confirm2 === false">
                             <template v-if="confirm2">提交</template>
-                            <template v-else>请勾选“本人郑重承诺”</template>
+                            <template v-else>请同意“本人郑重承诺”</template>
                         </el-button>
                     </el-form-item>
                 </el-form>
