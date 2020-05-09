@@ -1,6 +1,6 @@
 <template>
     <div>
-        <page-title title="返校教师员工健康卡填报"/>
+        <page-title title="返校健康卡填报"/>
         <div style="margin: 8px 8px 8px 8px" v-loading="isLoading">
             <slide-fade-transition>
                 <div v-if="todayReported" style="color: gray; text-align: center; font-size: 20px; padding-top: 80px;">
