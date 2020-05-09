@@ -32,64 +32,65 @@
                         <el-form-item label="学校的宿舍床位号（请具体到床位号，格式1A101-A，12-101-A）" required>
                             <el-input v-model="healthCardForm.dorm_room" type="text" maxlength="32"/>
                         </el-form-item>
+
+
+                        <el-form-item label="假期是否曾前往疫情防控重点地区" required>
+                            <el-radio-group v-model="healthCardForm.stayed_in_key_places">
+                                <el-radio :label="1">是</el-radio>
+                                <el-radio :label="0">否</el-radio>
+                            </el-radio-group>
+                        </el-form-item>
+
+                        <template v-if="healthCardForm.stayed_in_key_places === 1">
+                            <el-form-item label="前往时间" required>
+                                <el-date-picker
+                                    v-model="healthCardForm.in_key_places_from"
+                                    type="date"
+                                    placeholder="选择日期"
+                                    value-format="yyyy-MM-dd"
+                                    clearable>
+                                </el-date-picker>
+                            </el-form-item>
+
+                            <el-form-item label="离开时间">
+                                <el-date-picker
+                                    v-model="healthCardForm.in_key_places_to"
+                                    type="date"
+                                    placeholder="选择日期"
+                                    value-format="yyyy-MM-dd"
+                                    clearable>
+                                </el-date-picker>
+                            </el-form-item>
+
+                            <el-form-item label="返莞时间">
+                                <el-date-picker
+                                    v-model="healthCardForm.back_to_dongguan_at"
+                                    type="date"
+                                    placeholder="选择日期"
+                                    value-format="yyyy-MM-dd"
+                                    clearable>
+                                </el-date-picker>
+                            </el-form-item>
+                        </template>
+
+                        <el-form-item label="是否接触过疫情防控重点地区高危人员" required>
+                            <el-radio-group v-model="healthCardForm.touched_high_risk_people">
+                                <el-radio :label="1">是</el-radio>
+                                <el-radio :label="0">否</el-radio>
+                            </el-radio-group>
+                        </el-form-item>
+
+                        <el-form-item v-if="healthCardForm.touched_high_risk_people === 1" label="接触时间" required>
+                            <el-date-picker
+                                v-model="healthCardForm.touched_high_risk_people_at"
+                                type="date"
+                                placeholder="选择日期"
+                                value-format="yyyy-MM-dd"
+                                clearable>
+                            </el-date-picker>
+                        </el-form-item>
                     </template>
 
-
-                    <el-form-item label="假期是否曾前往疫情防控重点地区" required>
-                        <el-radio-group v-model="healthCardForm.stayed_in_key_places">
-                            <el-radio :label="1">是</el-radio>
-                            <el-radio :label="0">否</el-radio>
-                        </el-radio-group>
-                    </el-form-item>
-
-                    <template v-if="healthCardForm.stayed_in_key_places === 1">
-                        <el-form-item label="前往时间" required>
-                            <el-date-picker
-                                v-model="healthCardForm.in_key_places_from"
-                                type="date"
-                                placeholder="选择日期"
-                                value-format="yyyy-MM-dd"
-                                clearable>
-                            </el-date-picker>
-                        </el-form-item>
-
-                        <el-form-item label="离开时间">
-                            <el-date-picker
-                                v-model="healthCardForm.in_key_places_to"
-                                type="date"
-                                placeholder="选择日期"
-                                value-format="yyyy-MM-dd"
-                                clearable>
-                            </el-date-picker>
-                        </el-form-item>
-
-                        <el-form-item label="返莞时间">
-                            <el-date-picker
-                                v-model="healthCardForm.back_to_dongguan_at"
-                                type="date"
-                                placeholder="选择日期"
-                                value-format="yyyy-MM-dd"
-                                clearable>
-                            </el-date-picker>
-                        </el-form-item>
-                    </template>
-
-                    <el-form-item label="是否接触过疫情防控重点地区高危人员" required>
-                        <el-radio-group v-model="healthCardForm.touched_high_risk_people">
-                            <el-radio :label="1">是</el-radio>
-                            <el-radio :label="0">否</el-radio>
-                        </el-radio-group>
-                    </el-form-item>
-
-                    <el-form-item v-if="healthCardForm.touched_high_risk_people === 1" label="接触时间" required>
-                        <el-date-picker
-                            v-model="healthCardForm.touched_high_risk_people_at"
-                            type="date"
-                            placeholder="选择日期"
-                            value-format="yyyy-MM-dd"
-                            clearable>
-                        </el-date-picker>
-                    </el-form-item>
 
                     <el-form-item label="目前，本人身体状况" required>
                         <el-radio-group v-model="form.self_status">
@@ -121,8 +122,23 @@
                         <el-input v-model="form.family_status_details" type="textarea" maxlength="255" show-word-limit/>
                     </el-form-item>
 
+                    <template v-if="type === 1">
+                        <el-form-item label="本人或同住家庭成员当日是否接触过确诊病例、疑是病例或无症状感染者" required>
+                            <el-radio-group v-model="form.extra.today_touce_risk_people">
+                                <el-radio :label="0">否</el-radio>
+                                <el-radio :label="1">是</el-radio>
+                            </el-radio-group>
+                        </el-form-item>
+                        <el-form-item label="当日是否在校上班" required>
+                            <el-radio-group v-model="form.extra.today_work_in_school">
+                                <el-radio :label="0">否</el-radio>
+                                <el-radio :label="1">是</el-radio>
+                            </el-radio-group>
+                        </el-form-item>
+                    </template>
+
                     <el-form-item required>
-                        <el-checkbox v-model="confirm2"><span style="color: red;">本人承诺，如实填报该卡数据</span></el-checkbox>
+                        <el-checkbox v-model="confirm2"><span style="color: red;">本人郑重承诺：以上情况属实，不存在任何隐瞒的情况。如有不实，本人愿意承担相关责任。</span></el-checkbox>
                     </el-form-item>
 
                     <alert type="error" title="错误" :messages="errors"/>
@@ -131,7 +147,7 @@
                         <el-button style="width: 100%;" native-type="submit" type="primary"
                                    :disabled="isLoading || confirm2 === false">
                             <template v-if="confirm2">提交</template>
-                            <template v-else>请勾选“本人承诺，如实填报该卡数据”</template>
+                            <template v-else>请勾选“本人郑重承诺”</template>
                         </el-button>
                     </el-form-item>
                 </el-form>
@@ -157,7 +173,9 @@
                 name: "",
                 department: "",
                 type: null,
-                form: {},
+                form: {
+                    extra: {},
+                },
                 healthCardForm: {},
                 confirm1: false,
                 confirm2: false,
