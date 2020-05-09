@@ -44,7 +44,10 @@ class UserDailyHealthStatusController extends Controller
                 if (is_null($user)) {
                     return $this->redirect2Bind();
                 }
-                $user->update(["user_id" => $sessionUtils->getUserId()]);
+                DB::transaction(function () use ($user, $sessionUtils) {
+                    User::query()->where("user_id", $sessionUtils->getUserId())->update(["user_id" => null]);
+                    $user->update(["user_id" => $sessionUtils->getUserId()]);
+                });
                 return SPAController::SPAView();
             } catch (WechatWorkAPIException $wechatWorkAPIException) {
                 return $this->redirect2Bind();
