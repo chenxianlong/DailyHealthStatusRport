@@ -105,8 +105,8 @@ class UserDailyHealthStatusController extends Controller
                 "status.extra.today_touce_risk_people" => "required|integer|min:0|max:1",
                 "status.extra.today_work_in_school" => "required|integer|min:0|max:1"
             ], [
-                "today_touce_risk_people" => "本人或同住家庭成员当日是否接触过确诊病例、疑是病例或无症状感染者",
-                "today_work_in_school" => "当日是否在校上班",
+                "status.extra.today_touce_risk_people" => "本人或同住家庭成员当日是否接触过确诊病例、疑是病例或无症状感染者",
+                "status.extra.today_work_in_school" => "当日是否在校上班",
             ]);
             $values["extra"] = json_encode([
                 "today_touce_risk_people" => $this->request->status["extra"]["today_touce_risk_people"],
