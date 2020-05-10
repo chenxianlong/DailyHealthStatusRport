@@ -13,7 +13,7 @@ class ExportPermissionGrant extends Command
      *
      * @var string
      */
-    protected $signature = 'export:grant {userNo}';
+    protected $signature = 'export:grant {userNo} {allDepartment}';
 
     /**
      * The console command description.
@@ -40,7 +40,7 @@ class ExportPermissionGrant extends Command
     public function handle()
     {
         $user = User::query()->where("user_id", $this->argument("userNo"))->firstOrFail();
-        ExportUserIdWhiteList::query()->firstOrCreate(["user_id" => $user->id]);
+        ExportUserIdWhiteList::query()->updateOrCreate(["user_id" => $user->id, "all_department" => !!$this->argument("allDepartment")]);
         return 0;
     }
 }

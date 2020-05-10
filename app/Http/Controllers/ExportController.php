@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Constants\AvailableAttributes;
+use App\ExportUserIdWhiteList;
 use App\User;
+use App\UserAllowExportDepartment;
 use App\UserDailyHealthStatus;
 use App\UserHealthCard;
 use App\UserHealthReports;
@@ -42,19 +44,33 @@ class ExportController extends Controller
         $this->validate($this->request, [
             "type" => [
                 "required",
-                Rule::in([-1, 0, 1, 2]),
+                Rule::in([0, 1]),
             ],
         ]);
 
         $availableDatesQueryBuilder = UserDailyHealthStatus::query();
-        if ($this->request->type != -1) {
-            $availableDatesQueryBuilder->join("users", "user_daily_health_statuses.user_id", "=", "users.id")->where("users.type", $this->request->type);
-        }
+        // if ($this->request->type != -1) {
+        $availableDatesQueryBuilder->join("users", "user_daily_health_statuses.user_id", "=", "users.id")->where("users.type", $this->request->type);
+        // }
         $availableDates = $availableDatesQueryBuilder->groupBy("reported_date")->orderBy("reported_date")->pluck("reported_date")->toArray();
+
+        $userAllowExportDepartmentList = UserAllowExportDepartment::query()->where("user_id", $sessionUtils->getUser()->id)->pluck("department")->toArray();
+        $userIdList = [];
+        if (count($userAllowExportDepartmentList)) {
+            $queryBuilder = User::query();
+            foreach ($userAllowExportDepartmentList as $department) {
+                $queryBuilder->orWhere('department', "LIKE", "%/" . $department . "%");
+            }
+            $userIdList = $queryBuilder->pluck("id")->toArray();
+            $availableDatesQueryBuilder->whereIn("user_daily_health_statuses.user_id", $userIdList);
+        }
 
         $dateCount = count($availableDates);
 
         $userDailyHealthStatusesQueryBuilder = UserDailyHealthStatus::query()->join("users", "user_daily_health_statuses.user_id", "=", "users.id");
+        if (count($userAllowExportDepartmentList)) {
+            $userDailyHealthStatusesQueryBuilder->whereIn("user_daily_health_statuses.user_id", $userIdList);
+        }
         if ($this->request->type != -1) {
             $userDailyHealthStatusesQueryBuilder->where("users.type", $this->request->type);
         }
@@ -82,94 +98,139 @@ EOF
         fwrite($fp, <<<EOF
 <table border="1">
 <thead>
-<tr>
-    <th rowspan="2">姓名</th>
-    <th rowspan="2">部门/班级</th>
-    <th rowspan="2">联系电话</th>
-    <th rowspan="2">现居住地址</th>
-    <th rowspan="2">曾前往疫情防控重点地区</th>
-    <th rowspan="2">前往时间</th>
-    <th rowspan="2">离开时间</th>
-    <th rowspan="2">返莞时间</th>
-    <th rowspan="2">曾接触过疫情防疫重点地区高危人员</th>
-    <th rowspan="2">接触时间</th>
-    <th colspan="{$dateCount}">自身健康状况</th>
-    <th colspan="{$dateCount}">家庭成员健康状况</th>
-</tr>
-<tr>
 EOF
         );
 
-        foreach ($availableDates as $date) {
-            fwrite($fp, "<td>". substr($date, 0, 10) ."</td>");
-        }
-        foreach ($availableDates as $date) {
-            fwrite($fp, "<td>". substr($date, 0, 10) ."</td>");
+        if ($this->request->type === 1) {
+            fwrite($fp, <<<EOF
+<tr>
+    <th rowspan="2">姓名</th>
+    <th rowspan="2">部门</th>
+    <th rowspan="2">联系电话</th>
+    <th rowspan="2">现居住地址</th>
+EOF
+            );
+            foreach ($availableDates as $date) {
+                fwrite($fp, "<th class='text' colspan='4'>" . substr($date, 0, 10) . "</th>");
+            }
+            fwrite($fp, "</tr><tr>
+");
+            fwrite($fp, str_repeat("
+    <th class='text'>本人身体健康状况</th>
+    <th class='text'>同住家庭成员身体状况</th>
+    <th class='text'>家庭成员是否接触过确诊病例、疑似病例或无症状感染者</th>
+    <th class='text'>当日是否在校上班</th>
+", $dateCount));
         }
 
         fwrite($fp, <<<EOF
 </tr>
+EOF
+        );
+
+        /*
+        foreach ($availableDates as $date) {
+            fwrite($fp, "<td>" . substr($date, 0, 10) . "</td>");
+        }
+        foreach ($availableDates as $date) {
+            fwrite($fp, "<td>" . substr($date, 0, 10) . "</td>");
+        }
+        */
+
+        fwrite($fp, <<<EOF
 </thead>
 <tbody>
 EOF
         );
 
-        foreach ($userDailyHealthStatuses as $userId => $statuses) {
-            /**
-             * @var Collection $statuses
-             */
-            $statusesKeyByDate = $statuses->keyBy("reported_date");
-            $firstStatus = $statuses->first();
-            $userHealthCard = UserHealthCard::query()->find($userId);
-            $row = "<tr>";
-            $row .= "<td class='text'>". htmlentities($firstStatus->name) ."</td>";
-            $row .= "<td class='text'>". htmlentities($firstStatus->department) ."</td>";
-            if ($userHealthCard) {
-                $row .= "<td class='text'>". $userHealthCard->phone ."</td>";
-                $row .= "<td class='text'>". $userHealthCard->address ."</td>";
-                $row .= "<td class='text'>". ($userHealthCard->in_key_places_from ? "是" : "否")  ."</td>";
-                $row .= "<td class='text'>". $userHealthCard->in_key_places_from ."</td>";
-                $row .= "<td class='text'>". $userHealthCard->in_key_places_to ."</td>";
-                $row .= "<td class='text'>". $userHealthCard->back_to_dongguan_at ."</td>";
-                $row .= "<td class='text'>". ($userHealthCard->touched_high_risk_people_at ? "是" : "否") ."</td>";
-                $row .= "<td class='text'>". $userHealthCard->touched_high_risk_people_at ."</td>";
-            } else {
-                $row .= "<td class='text'></td>";
-                $row .= "<td class='text'></td>";
-                $row .= "<td class='text'></td>";
-                $row .= "<td class='text'></td>";
-                $row .= "<td class='text'></td>";
-                $row .= "<td class='text'></td>";
-                $row .= "<td class='text'></td>";
-                $row .= "<td class='text'></td>";
-            }
-
-            $selfRow1Columns = "";
-            $familyRow1Columns = "";
-            foreach ($availableDates as $date) {
-                if ($statusesKeyByDate->has($date)) {
-                    $status = $statusesKeyByDate->get($date);
-                    if ($status->self_status) {
-                        $selfStatus = "异常：" . htmlentities($status->self_status_details);
-                    } else {
-                        $selfStatus = "正常";
-                    }
-                    $selfRow1Columns .= "<td class='text'>". $selfStatus ."</td>";
-                    if ($status->family_status) {
-                        $familyStatus = "异常：" . htmlentities($status->family_status_details);
-                    } else {
-                        $familyStatus = "正常";
-                    }
-                    $familyRow1Columns .= "<td class='text'>". $familyStatus ."</td>";
+        if ($this->request->type === 1) {
+            foreach ($userDailyHealthStatuses as $userId => $statuses) {
+                /**
+                 * @var Collection $statuses
+                 */
+                $statusesKeyByDate = $statuses->keyBy("reported_date");
+                $firstStatus = $statuses->first();
+                $userHealthCard = UserHealthCard::query()->find($userId);
+                $row = "<tr>";
+                $row .= "<td class='text'>" . htmlentities($firstStatus->name) . "</td>";
+                $row .= "<td class='text'>" . htmlentities($firstStatus->department) . "</td>";
+                if ($userHealthCard) {
+                    $row .= "<td class='text'>" . $userHealthCard->phone . "</td>";
+                    $row .= "<td class='text'>" . $userHealthCard->address . "</td>";
+                    /*
+                    $row .= "<td class='text'>" . ($userHealthCard->in_key_places_from ? "是" : "否") . "</td>";
+                    $row .= "<td class='text'>" . $userHealthCard->in_key_places_from . "</td>";
+                    $row .= "<td class='text'>" . $userHealthCard->in_key_places_to . "</td>";
+                    $row .= "<td class='text'>" . $userHealthCard->back_to_dongguan_at . "</td>";
+                    $row .= "<td class='text'>" . ($userHealthCard->touched_high_risk_people_at ? "是" : "否") . "</td>";
+                    $row .= "<td class='text'>" . $userHealthCard->touched_high_risk_people_at . "</td>";
+                    */
                 } else {
-                    $selfRow1Columns .= "<td class='text'></td>";
-                    $familyRow1Columns .= "<td class='text'></td>";
+                    $row .= "<td class='text'></td>";
+                    $row .= "<td class='text'></td>";
+                    /*
+                    $row .= "<td class='text'></td>";
+                    $row .= "<td class='text'></td>";
+                    $row .= "<td class='text'></td>";
+                    $row .= "<td class='text'></td>";
+                    $row .= "<td class='text'></td>";
+                    $row .= "<td class='text'></td>";
+                    */
                 }
+
+                $columns = "";
+                foreach ($availableDates as $date) {
+                    if ($statusesKeyByDate->has($date)) {
+                        $status = $statusesKeyByDate->get($date);
+                        $extra = json_decode($status->extra);
+                        if ($status->self_status) {
+                            $selfStatus = "异常：" . htmlentities($status->self_status_details);
+                        } else {
+                            $selfStatus = "正常";
+                        }
+                        $columns .= "<td class='text'>" . $selfStatus . "</td>";
+                        if ($status->family_status) {
+                            $familyStatus = "异常：" . htmlentities($status->family_status_details);
+                        } else {
+                            $familyStatus = "正常";
+                        }
+                        $columns .= "<td class='text'>" . $familyStatus . "</td>";
+                        if ($extra) {
+                            if (property_exists($extra, "today_touch_risk_people")) {
+                                if ($extra->today_touce_risk_people) {
+                                    $todayTouchRiskPeople = "是";
+                                } else {
+                                    $todayTouchRiskPeople = "否";
+                                }
+                            } else {
+                                $todayTouchRiskPeople = "";
+                            }
+                            $columns .= "<td class='text'>" . $todayTouchRiskPeople . "</td>";
+                            if (property_exists($extra, "today_work_in_school")) {
+                                if ($extra->today_work_in_school) {
+                                    $todayWorkInSchool = "是";
+                                } else {
+                                    $todayWorkInSchool = "否";
+                                }
+                            } else {
+                                $todayWorkInSchool = "";
+                            }
+                            $columns .= "<td class='text'>" . $todayWorkInSchool . "</td>";
+                        } else {
+                            $columns .= "<td class='text'></td>";
+                            $columns .= "<td class='text'></td>";
+                        }
+                    } else {
+                        $columns .= "<td class='text'></td>";
+                        $columns .= "<td class='text'></td>";
+                        $columns .= "<td class='text'></td>";
+                        $columns .= "<td class='text'></td>";
+                    }
+                }
+                fwrite($fp, $row);
+                fwrite($fp, $columns);
+                fwrite($fp, "</tr>");
             }
-            fwrite($fp, $row);
-            fwrite($fp, $selfRow1Columns);
-            fwrite($fp, $familyRow1Columns);
-            fwrite($fp, "</tr>");
         }
 
         fwrite($fp, <<<EOF
@@ -190,11 +251,10 @@ EOF
             "salt" => $salt = base64_encode(random_bytes(8)),
             "signature" => sha1($filename . $expireAt . $sessionUtils->getUser()->id . $salt . env("HR_EXPORT_PASSWORD")),
         ]);
-            response($fullPageContent)
-                ->header("Cache-Control", "no-cache, no-store, must-revalidate")
-                ->header("Content-type", "application/vnd.ms-excel")
-                ->header("Content-Disposition", "attachment; filename=all-". time() . ".xls")
-            ;
+        response($fullPageContent)
+            ->header("Cache-Control", "no-cache, no-store, must-revalidate")
+            ->header("Content-type", "application/vnd.ms-excel")
+            ->header("Content-Disposition", "attachment; filename=all-" . time() . ".xls");
     }
 
     public function exportNotReported(SessionUtils $sessionUtils)
@@ -212,11 +272,29 @@ EOF
 
         $date = $this->request->date;
 
+        $userAllowExportDepartmentList = UserAllowExportDepartment::query()->where("user_id", $sessionUtils->getUser()->id)->pluck("department")->toArray();
+        $userIdInWhere = "";
+        if (count($userAllowExportDepartmentList)) {
+            $queryBuilder = User::query();
+            foreach ($userAllowExportDepartmentList as $department) {
+                $queryBuilder->orWhere('department', "LIKE", "%/" . $department . "%");
+            }
+            $userIdList = $queryBuilder->pluck("id")->toArray();
+            if (!count($userIdList)) {
+                throw ValidationException::withMessages(["无记录"]);
+            }
+            $userIdInWhere = " AND id IN (" . implode(",", $userIdList) . ")";
+        }
+
+        /*
         if ($this->request->type != -1) {
-            $notReportedUsers = DB::select("SELECT * FROM `users` WHERE id NOT IN (SELECT user_id FROM `user_daily_health_statuses` WHERE reported_date = ?) AND type = ?", [$date, $this->request->type]);
+        */
+        $notReportedUsers = DB::select("SELECT * FROM `users` WHERE id NOT IN (SELECT user_id FROM `user_daily_health_statuses` WHERE reported_date = ?) AND type = ?" . $userIdInWhere, [$date, $this->request->type]);
+        /*
         } else {
             $notReportedUsers = DB::select("SELECT * FROM `users` WHERE id NOT IN (SELECT user_id FROM `user_daily_health_statuses` WHERE reported_date = ?)", [$date]);
         }
+        */
 
         $filename = "not-reported-" . $date . "-" . time() . mt_rand(100000000, 999999999) . ".xls";
         $filePath = $this->storeDirectory . $filename;
@@ -251,7 +329,7 @@ EOF
 
         foreach ($notReportedUsers as $user) {
             fwrite($fp, "<tr>");
-            fwrite($fp, "<td class='text'>". $user->name ."</td><td class='text'>". $user->department ."</td>");
+            fwrite($fp, "<td class='text'>" . $user->name . "</td><td class='text'>" . $user->department . "</td>");
             fwrite($fp, "</tr>");
         }
 
@@ -277,8 +355,7 @@ EOF
             response($fullPageContent)
                 ->header("Cache-Control", "no-cache, no-store, must-revalidate")
                 ->header("Content-type", "application/vnd.ms-excel")
-                ->header("Content-Disposition", "attachment; filename=not-reported-". $date . ".xls")
-            ;
+                ->header("Content-Disposition", "attachment; filename=not-reported-" . $date . ".xls");
     }
 
     public function download()

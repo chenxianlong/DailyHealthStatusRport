@@ -4,10 +4,8 @@
         <el-form style="margin: 8px 8px 8px 8px;" v-if="authenticated" label-width="80px" size="small" v-on:submit.native.prevent="() => {}" v-loading="isLoading">
             <el-form-item label="人员类型">
                 <el-radio-group v-model="exportReportedType">
-                    <el-radio :label="-1">所有人员</el-radio>
                     <el-radio :label="1">教职工</el-radio>
                     <el-radio :label="0">学生</el-radio>
-                    <el-radio :label="2">后勤</el-radio>
                 </el-radio-group>
             </el-form-item>
 
@@ -19,10 +17,8 @@
 
             <el-form-item label="人员类型">
                 <el-radio-group v-model="exportNotReportedType">
-                    <el-radio :label="-1">所有人员</el-radio>
                     <el-radio :label="1">教职工</el-radio>
                     <el-radio :label="0">学生</el-radio>
-                    <el-radio :label="2">后勤</el-radio>
                 </el-radio-group>
             </el-form-item>
 
@@ -61,8 +57,8 @@
                 authenticated: true,
                 availableDates: [],
                 password: "",
-                exportReportedType: -1,
-                exportNotReportedType: -1,
+                exportReportedType: 1,
+                exportNotReportedType: 1,
                 date: "",
             };
         },

@@ -40,7 +40,7 @@ class UserImportInfoFromWeChatWork extends Command
      */
     public function handle()
     {
-        foreach (User::query()->where("type", 1)->whereNull("open_id")->whereNull("user_id")->get() as $user) {
+        foreach (User::query()->where("type", 1)->get() as $user) {
             $matchUser = null;
             $weChatUserFindByName = WeChatWorkUsers::query()->where("name", $user->name)->get();
             if ($weChatUserFindByName->count() === 0) {
@@ -48,11 +48,29 @@ class UserImportInfoFromWeChatWork extends Command
                 continue;
             }
             if ($weChatUserFindByName->count() > 1) {
-                $this->error($user->name . " duplicated.");
-                continue;
+                if ($user->id_card_no || $user->user_id) {
+                    if ($user->id_card_no) {
+                        $weChatUserFindByName = WeChatWorkUsers::query()->where("name", $user->name)->where("id_card_no", $user->id_card_no)->get();
+                    }
+                    if ($weChatUserFindByName->count() !== 1 && $user->user_id) {
+                        $weChatUserFindByName = WeChatWorkUsers::query()->where("name", $user->name)->where("user_id", $user->user_id)->get();
+                    }
+                    if ($weChatUserFindByName->count() !== 1) {
+                        $this->error($user->name . " duplicated, not found with id card no and user id.");
+                        continue;
+                    }
+                } else {
+                    $this->error($user->name . " duplicated.");
+                    continue;
+                }
             }
             $matchUser = $weChatUserFindByName->first();
-            $user->update(["department" => $matchUser->department, "user_id" => $matchUser->user_id]);
+            $user->update(["department" => $matchUser->department]);
+            if (is_null($user->user_id)) {
+                try {
+                    $user->update(["user_id" => $matchUser->user_id]);
+                } catch (\Throwable $throwable) {}
+            }
         }
         return 0;
     }

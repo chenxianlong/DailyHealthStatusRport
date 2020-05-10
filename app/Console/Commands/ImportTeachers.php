@@ -3,26 +3,25 @@
 namespace App\Console\Commands;
 
 use App\User;
-use App\WeChatWorkUsers;
 use Box\Spout\Common\Entity\Cell;
 use Box\Spout\Reader\Common\Creator\ReaderEntityFactory;
 use Illuminate\Console\Command;
 
-class WeChatWorkUserImport extends Command
+class ImportTeachers extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'ww:user:import {filePath}';
+    protected $signature = 'teacher:import {filePath}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Import WeChatWork users';
+    protected $description = 'Import teachers';
 
     /**
      * Create a new command instance.
@@ -51,23 +50,18 @@ class WeChatWorkUserImport extends Command
                  * @var Cell[] $cells
                  */
                 $cells = $row->getCells();
-                $name = trim($cells[0]->getValue());
-                $userId = trim($cells[1]->getValue());
-                $department = trim($cells[4]->getValue());
-                $gender = trim($cells[5]->getValue());
-                $phone = trim($cells[6]->getValue());
-                $idCardNo = trim($cells[18]->getValue());
-
-                WeChatWorkUsers::query()->updateOrCreate([
-                    "user_id" => $userId,
-                ], [
-                    "name" => $name,
-                    "department" => $department,
-                    "gender" => $gender,
-                    "phone" => $phone,
+                $jobNumber = (string) $cells[1]->getValue();
+                $name = (string) $cells[2]->getValue();
+                $idCardNo = (string) $cells[3]->getValue();
+                $this->info($jobNumber . " " . $name . " " . $idCardNo);
+                User::query()->where("user_id", $jobNumber)->update(["user_id" => null]);
+                User::query()->updateOrCreate([
                     "id_card_no" => $idCardNo,
+                ], [
+                    "user_id" => $jobNumber,
+                    "name" => $name,
+                    "type" => 1,
                 ]);
-                // $this->info($name . " " . $idCardNo . " " . $type);
             }
         }
         return 0;
