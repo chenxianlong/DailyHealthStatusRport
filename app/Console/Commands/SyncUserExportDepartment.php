@@ -14,7 +14,7 @@ class SyncUserExportDepartment extends Command
      *
      * @var string
      */
-    protected $signature = 'user:export:department:sync {userId} {departments}';
+    protected $signature = 'user:export:department:sync {userId} {departments?}';
 
     /**
      * The console command description.
@@ -44,6 +44,9 @@ class SyncUserExportDepartment extends Command
         $departmentList = explode(";", $this->argument("departments"));
         $values = [];
         foreach ($departmentList as $department) {
+            if (empty($department)) {
+                continue;
+            }
             $values[] = [
                 "user_id" => $user->id,
                 "department" => $department,
