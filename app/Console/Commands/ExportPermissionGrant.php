@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\ExportUserIdWhiteList;
 use App\User;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 
 class ExportPermissionGrant extends Command
 {
@@ -13,7 +14,7 @@ class ExportPermissionGrant extends Command
      *
      * @var string
      */
-    protected $signature = 'export:grant {userNo}';
+    protected $signature = 'export:grant {userNo} {types?}';
 
     /**
      * The console command description.
@@ -40,7 +41,20 @@ class ExportPermissionGrant extends Command
     public function handle()
     {
         $user = User::query()->where("user_id", $this->argument("userNo"))->firstOrFail();
-        ExportUserIdWhiteList::query()->updateOrCreate(["user_id" => $user->id]);
+        $values = [];
+        foreach (explode(",", $this->argument("types")) as $type) {
+            if ($type === "") {
+                continue;
+            }
+            $values[] = [
+                "user_id" => $user->id,
+                "type" => $type,
+            ];
+        }
+        DB::transaction(function () use ($user, &$values) {
+            ExportUserIdWhiteList::query()->where("user_id", $user->id)->delete();
+            ExportUserIdWhiteList::query()->insert($values);
+        });
         return 0;
     }
 }

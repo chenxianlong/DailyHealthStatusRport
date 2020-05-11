@@ -22,7 +22,7 @@ class ExportAuthenticate
          * @var SessionUtils $sessionUtils
          */
         $sessionUtils = resolve(SessionUtils::class);
-        if (is_null($sessionUtils->getUser()) || (is_null(ExportUserIdWhiteList::query()->find($sessionUtils->getUser()->id) && is_null(UserAllowExportDepartment::query()->where("user_id", $sessionUtils->getUser()->id))))) {
+        if (is_null($sessionUtils->getUser()) || (is_null(ExportUserIdWhiteList::query()->find($sessionUtils->getUser()->id) && is_null(UserAllowExportDepartment::query()->where("user_id", $sessionUtils->getUser()->id))) && strlen($sessionUtils->getUserId()) !== 8)) {
             abort(403);
         }
         return $next($request);

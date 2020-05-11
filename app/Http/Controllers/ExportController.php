@@ -32,12 +32,15 @@ class ExportController extends Controller
         @mkdir($this->storeDirectory, 0700);
     }
 
-    public function status()
+    public function status(SessionUtils $sessionUtils)
     {
+        $this->userExportPermissions($sessionUtils, $allowExportTeachers, $allowExportStudents);
         return Views::successAPIResponse([
             "authenticated" => true,
             "availableDates" => UserDailyHealthStatus::query()->groupBy("reported_date")->pluck("reported_date", "reported_date"),
             "availableClasses" => User::query()->select(["department"])->where("type", UserType::STUDENT)->groupBy("department")->pluck("department"),
+            "allowExportTeachers" => $allowExportTeachers,
+            "allowExportStudents" => $allowExportStudents,
         ]);
     }
 
@@ -49,6 +52,14 @@ class ExportController extends Controller
                 Rule::in([0, 1]),
             ],
         ]);
+
+        $this->userExportPermissions($sessionUtils, $allowExportTeachers, $allowExportStudents);
+        if ($allowExportTeachers !== 2 && $this->request->type == 1) {
+            abort(403, "无导出教职工数据权限");
+        }
+        if ($allowExportStudents !== 2 && $this->request->type == 0) {
+            abort(403, "无导出学生数据权限");
+        }
 
         $availableDatesQueryBuilder = UserDailyHealthStatus::query();
         // if ($this->request->type != -1) {
@@ -358,9 +369,17 @@ EOF
             ],
             "type" => [
                 "required",
-                Rule::in([-1, 0, 1, 2]),
+                Rule::in([0, 1]),
             ],
         ]);
+
+        $this->userExportPermissions($sessionUtils, $allowExportTeachers, $allowExportStudents);
+        if ($allowExportTeachers === 0 && $this->request->type == 1) {
+            abort(403, "无导出教师数据权限");
+        }
+        if ($allowExportStudents === 0 && $this->request->type == 0) {
+            abort(403, "无导出学生数据权限");
+        }
 
         $date = $this->request->date;
 
@@ -378,17 +397,22 @@ EOF
             $userIdInWhere = " AND id IN (" . implode(",", $userIdList) . ")";
         }
         $selectedClassesIn = "";
+        $selectedClassesValues = [];
         if ($this->request->type === 0) {
-            $selectedClasses = $this->request->selectedClasses;
-            if (count($selectedClasses)) {
-                $selectedClassesIn = " AND department IN (". implode(",", $selectedClasses) .")";
+            $selectedClassesValues = $this->request->selectedClasses;
+            if ($selectedClassesCount = count($selectedClassesValues)) {
+                $valueBinding = str_repeat("? ,", $selectedClassesCount);
+                $valueBinding = substr($valueBinding, 0, strlen($valueBinding) - 1);
+                $selectedClassesIn = " AND department IN (". $valueBinding .")";
             }
         }
+
+        $values2Bind = array_merge([$date, $this->request->type], $selectedClassesValues);
 
         /*
         if ($this->request->type != -1) {
         */
-        $notReportedUsers = DB::select("SELECT * FROM `users` WHERE id NOT IN (SELECT user_id FROM `user_daily_health_statuses` WHERE reported_date = ?) AND type = ?" . $userIdInWhere . $selectedClassesIn, [$date, $this->request->type]);
+        $notReportedUsers = DB::select("SELECT * FROM `users` WHERE id NOT IN (SELECT user_id FROM `user_daily_health_statuses` WHERE reported_date = ?) AND type = ?" . $userIdInWhere . $selectedClassesIn, $values2Bind);
         /*
         } else {
             $notReportedUsers = DB::select("SELECT * FROM `users` WHERE id NOT IN (SELECT user_id FROM `user_daily_health_statuses` WHERE reported_date = ?)", [$date]);
@@ -467,5 +491,26 @@ EOF
         }
 
         return response()->download($this->storeDirectory . $this->request->filename);
+    }
+
+    private function userExportPermissions(SessionUtils $sessionUtils, &$allowExportTeachers, &$allowExportStudents)
+    {
+        $user = $sessionUtils->getUser();
+        $exportPermission = ExportUserIdWhiteList::query()->where("user_id", $user->id)->get()->pluck("type", "type")->toArray();
+        if (array_key_exists(UserType::TEACHER, $exportPermission)) {
+            $allowExportTeachers = 2;
+        } else if (UserAllowExportDepartment::query()->where("user_id", $user->id)->count()) {
+            $allowExportTeachers = 1;
+        } else {
+            $allowExportTeachers = 0;
+        }
+
+        if (array_key_exists(UserType::STUDENT, $exportPermission)) {
+            $allowExportStudents = 2;
+        } else if (strlen($sessionUtils->getUserId()) === 8) {
+            $allowExportStudents = 1;
+        } else {
+            $allowExportStudents = 0;
+        }
     }
 }
