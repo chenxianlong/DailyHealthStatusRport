@@ -2,7 +2,7 @@
     <div>
         <page-title title="导出"/>
         <el-form style="margin: 8px 8px 8px 8px;" v-if="authenticated" label-width="80px" size="small" v-on:submit.native.prevent="() => {}" v-loading="isLoading">
-            <template v-if="allowExportTeachers === 2 && allowExportStudents === 2">
+            <template v-if="allowExportTeachers === 2 || allowExportStudents === 2">
                 <el-form-item label="人员类型" required>
                     <el-radio-group v-model="exportReportedType">
                         <el-radio v-if="allowExportTeachers === 2" :label="1">教职工</el-radio>
