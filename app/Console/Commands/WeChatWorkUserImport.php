@@ -67,7 +67,7 @@ class WeChatWorkUserImport extends Command
                     "phone" => $phone,
                     "id_card_no" => $idCardNo,
                 ]);
-                // $this->info($name . " " . $idCardNo . " " . $type);
+                $this->info($name . " " . $department);
             }
         }
         return 0;

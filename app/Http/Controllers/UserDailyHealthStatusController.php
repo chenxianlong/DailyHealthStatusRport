@@ -115,27 +115,29 @@ class UserDailyHealthStatusController extends Controller
             ]);
         }
 
-        if (@$request->card["stayed_in_key_places"]) {
-            $this->validate($request, [
-                "card.in_key_places_from" => "required|date_format:Y-m-d",
-                "card.in_key_places_to" => "nullable|date_format:Y-m-d",
-                "card.back_to_dongguan_at" => "nullable|date_format:Y-m-d",
-            ], [], [
-                "card.in_key_places_from" => "前往时间",
-                "card.in_key_places_to" => "离开时间",
-                "card.back_to_dongguan_at" => "返莞时间",
-            ]);
-            $cardValues["in_key_places_from"] = $request->card["in_key_places_from"];
-            $cardValues["in_key_places_to"] = $request->card["in_key_places_to"];
-            $cardValues["back_to_dongguan_at"] = $request->card["back_to_dongguan_at"];
-        }
-        if (@$request->card["touched_high_risk_people"]) {
-            $this->validate($request, [
-                "card.touched_high_risk_people_at" => "required|date_format:Y-m-d",
-            ], [], [
-                "card.touched_high_risk_people_at" => "接触时间",
-            ]);
-            $cardValues["touched_high_risk_people_at"] = $request->card["touched_high_risk_people_at"];
+        if ($sessionUtils->getUser()->type === 0) {
+            if (@$request->card["stayed_in_key_places"]) {
+                $this->validate($request, [
+                    "card.in_key_places_from" => "required|date_format:Y-m-d",
+                    "card.in_key_places_to" => "nullable|date_format:Y-m-d",
+                    "card.back_to_dongguan_at" => "nullable|date_format:Y-m-d",
+                ], [], [
+                    "card.in_key_places_from" => "前往时间",
+                    "card.in_key_places_to" => "离开时间",
+                    "card.back_to_dongguan_at" => "返莞时间",
+                ]);
+                $cardValues["in_key_places_from"] = $request->card["in_key_places_from"];
+                $cardValues["in_key_places_to"] = $request->card["in_key_places_to"];
+                $cardValues["back_to_dongguan_at"] = $request->card["back_to_dongguan_at"];
+            }
+            if (@$request->card["touched_high_risk_people"]) {
+                $this->validate($request, [
+                    "card.touched_high_risk_people_at" => "required|date_format:Y-m-d",
+                ], [], [
+                    "card.touched_high_risk_people_at" => "接触时间",
+                ]);
+                $cardValues["touched_high_risk_people_at"] = $request->card["touched_high_risk_people_at"];
+            }
         }
 
         if ($values["self_status"]) {
