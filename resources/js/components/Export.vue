@@ -2,11 +2,17 @@
     <div>
         <page-title title="导出"/>
         <el-form style="margin: 8px 8px 8px 8px;" v-if="authenticated" label-width="80px" size="small" v-on:submit.native.prevent="() => {}" v-loading="isLoading">
-            <el-form-item label="人员类型">
+            <el-form-item label="人员类型" required>
                 <el-radio-group v-model="exportReportedType">
                     <el-radio :label="1">教职工</el-radio>
                     <el-radio :label="0">学生</el-radio>
                 </el-radio-group>
+            </el-form-item>
+
+            <el-form-item v-if="exportReportedType === 0" label="班级">
+                <el-select v-model="selectedExportClasses" filterable multiple clearable size="small" placeholder="全部">
+                    <el-option v-for="availableClass in availableClasses" :key="availableClass" :label="availableClass" :value="availableClass"/>
+                </el-select>
             </el-form-item>
 
             <el-form-item>
@@ -15,14 +21,20 @@
 
             <el-divider>OR</el-divider>
 
-            <el-form-item label="人员类型">
+            <el-form-item label="人员类型" required>
                 <el-radio-group v-model="exportNotReportedType">
                     <el-radio :label="1">教职工</el-radio>
                     <el-radio :label="0">学生</el-radio>
                 </el-radio-group>
             </el-form-item>
 
-            <el-form-item label="日期">
+            <el-form-item v-if="exportNotReportedType === 0" label="班级">
+                <el-select v-model="selectedExportNotReportedClasses" filterable multiple clearable size="small" placeholder="全部">
+                    <el-option v-for="availableClass in availableClasses" :key="availableClass" :label="availableClass" :value="availableClass"/>
+                </el-select>
+            </el-form-item>
+
+            <el-form-item label="日期" required>
                 <el-date-picker
                     v-model="date"
                     type="date"
@@ -56,9 +68,12 @@
                 isLoading: false,
                 authenticated: true,
                 availableDates: [],
+                availableClasses: [],
                 password: "",
                 exportReportedType: 1,
                 exportNotReportedType: 1,
+                selectedExportClasses: [],
+                selectedExportNotReportedClasses: [],
                 date: "",
             };
         },
@@ -67,6 +82,7 @@
             axios.get(laravelRoute("export.status")).then(this.$apiResponseHandler((data) => {
                 this.authenticated = data.authenticated;
                 this.availableDates = data.availableDates;
+                this.availableClasses = data.availableClasses;
             })).catch(this.$axiosErrorHandler).then(() => {
                 this.isLoading = false;
             })
@@ -87,7 +103,7 @@
             },
             exportAll: function () {
                 this.isLoading = true;
-                axios.post("/export/all", {type: this.exportReportedType}).then(this.$apiResponseHandler((data) => {
+                axios.post("/export/all", {type: this.exportReportedType, selectedClasses: this.selectedExportClasses}).then(this.$apiResponseHandler((data) => {
                     window.location.href = laravelRoute("export.download", {filename: data.filename, expireAt: data.expireAt, userId: data.userId, salt: data.salt, signature: data.signature});
                 })).catch(this.$axiosErrorHandler).then(() => {
                     this.isLoading = false;
@@ -99,7 +115,7 @@
                     return;
                 }
                 this.isLoading = true;
-                axios.post("/export/notReported", {date: this.date, type: this.exportNotReportedType}).then(this.$apiResponseHandler((data) => {
+                axios.post("/export/notReported", {date: this.date, type: this.exportNotReportedType, selectedClasses: this.selectedExportNotReportedClasses}).then(this.$apiResponseHandler((data) => {
                     window.location.href = laravelRoute("export.download", {filename: data.filename, expireAt: data.expireAt, userId: data.userId, salt: data.salt, signature: data.signature});
                 })).catch(this.$axiosErrorHandler).then(() => {
                     this.isLoading = false;

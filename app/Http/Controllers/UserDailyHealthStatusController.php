@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Constants\UserType;
 use App\User;
 use App\UserDailyHealthStatus;
 use App\UserHealthCard;
