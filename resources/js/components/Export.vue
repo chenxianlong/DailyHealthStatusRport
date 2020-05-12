@@ -11,7 +11,7 @@
                 </el-form-item>
 
                 <el-form-item v-if="exportReportedType === 0" label="班级">
-                    <el-select v-model="selectedExportClasses" filterable multiple clearable size="small" placeholder="全部">
+                    <el-select v-model="selectedExportClasses" filterable multiple clearable size="small" placeholder="留空导出全部可访问班级">
                         <el-option v-for="availableClass in availableClasses" :key="availableClass" :label="availableClass" :value="availableClass"/>
                     </el-select>
                 </el-form-item>
@@ -31,7 +31,7 @@
             </el-form-item>
 
             <el-form-item v-if="exportNotReportedType === 0" label="班级">
-                <el-select v-model="selectedExportNotReportedClasses" filterable multiple clearable size="small" placeholder="全部">
+                <el-select v-model="selectedExportNotReportedClasses" filterable multiple clearable size="small" placeholder="留空导出全部可访问班级">
                     <el-option v-for="availableClass in availableClasses" :key="availableClass" :label="availableClass" :value="availableClass"/>
                 </el-select>
             </el-form-item>

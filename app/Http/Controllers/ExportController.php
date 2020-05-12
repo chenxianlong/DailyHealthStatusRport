@@ -390,14 +390,12 @@ EOF
 
         $departmentLikeWhere = "";
         $departmentLikeValues = [];
-        if ($this->request->type == 1) {
-            $userAllowExportDepartmentList = UserAllowExportDepartment::query()->where("user_id", $sessionUtils->getUser()->id)->pluck("department")->toArray();
-            if ($userAllowExportDepartmentListCount = count($userAllowExportDepartmentList)) {
-                $departmentLikeWhere = str_repeat(" department LIKE ? OR", $userAllowExportDepartmentListCount);
-                $departmentLikeWhere = " AND (" . substr($departmentLikeWhere, 0, strlen($departmentLikeWhere) - 2) . ")";
-                foreach ($userAllowExportDepartmentList as $department) {
-                    $departmentLikeValues[] = $department . "%";
-                }
+        $userAllowExportDepartmentList = UserAllowExportDepartment::query()->where("user_id", $sessionUtils->getUser()->id)->pluck("department")->toArray();
+        if ($userAllowExportDepartmentListCount = count($userAllowExportDepartmentList)) {
+            $departmentLikeWhere = str_repeat(" department LIKE ? OR", $userAllowExportDepartmentListCount);
+            $departmentLikeWhere = " AND (" . substr($departmentLikeWhere, 0, strlen($departmentLikeWhere) - 2) . ")";
+            foreach ($userAllowExportDepartmentList as $department) {
+                $departmentLikeValues[] = $department . "%";
             }
         }
         $selectedClassesIn = "";
@@ -407,7 +405,7 @@ EOF
             if ($selectedClassesCount = count($selectedClassesValues)) {
                 $valueBinding = str_repeat("? ,", $selectedClassesCount);
                 $valueBinding = substr($valueBinding, 0, strlen($valueBinding) - 1);
-                $selectedClassesIn = " AND department IN (". $valueBinding .")";
+                $selectedClassesIn = " AND department IN (" . $valueBinding . ")";
             }
         }
 
