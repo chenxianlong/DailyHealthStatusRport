@@ -65,32 +65,37 @@ class ExportController extends Controller
         // if ($this->request->type != -1) {
         $availableDatesQueryBuilder->join("users", "user_daily_health_statuses.user_id", "=", "users.id")->where("users.type", $this->request->type);
         // }
-        $availableDates = $availableDatesQueryBuilder->groupBy("reported_date")->orderBy("reported_date")->pluck("reported_date")->toArray();
 
         $userAllowExportDepartmentList = UserAllowExportDepartment::query()->where("user_id", $sessionUtils->getUser()->id)->pluck("department")->toArray();
-        $userIdList = [];
         if (count($userAllowExportDepartmentList)) {
-            $queryBuilder = User::query();
-            foreach ($userAllowExportDepartmentList as $department) {
-                $queryBuilder->orWhere('department', "LIKE", $department . "%");
-            }
-            $userIdList = $queryBuilder->pluck("id")->toArray();
-            $availableDatesQueryBuilder->whereIn("user_daily_health_statuses.user_id", $userIdList);
+            $availableDatesQueryBuilder->where(function ($builder) use (&$userAllowExportDepartmentList) {
+                foreach ($userAllowExportDepartmentList as $userAllowExportDepartment) {
+                    $builder->orWhere("users.department", "LIKE", $userAllowExportDepartment . "%");
+                }
+            });
         }
+
+        $availableDates = $availableDatesQueryBuilder->groupBy("reported_date")->orderBy("reported_date")->pluck("reported_date")->toArray();
 
         $dateCount = count($availableDates);
 
         $userDailyHealthStatusesQueryBuilder = UserDailyHealthStatus::query()->join("users", "user_daily_health_statuses.user_id", "=", "users.id");
         if (count($userAllowExportDepartmentList)) {
-            $userDailyHealthStatusesQueryBuilder->whereIn("user_daily_health_statuses.user_id", $userIdList);
+            $userDailyHealthStatusesQueryBuilder->where(function ($builder) use (&$userAllowExportDepartmentList) {
+                foreach ($userAllowExportDepartmentList as $userAllowExportDepartment) {
+                    $builder->orWhere("users.department", "LIKE", $userAllowExportDepartment . "%");
+                }
+            });
         }
         $userDailyHealthStatusesQueryBuilder->where("users.type", $this->request->type);
+        /*
         if ($this->request->type === 0) {
             $selectedClasses = $this->request->selectedClasses;
             if (count($selectedClasses)) {
                 $userDailyHealthStatusesQueryBuilder->whereIn("users.department", $selectedClasses);
             }
         }
+        */
         $userDailyHealthStatuses = $userDailyHealthStatusesQueryBuilder->select(["user_daily_health_statuses.*", "users.name", "users.department", "users.type", "users.id_card_no"])->orderBy("users.id")->orderBy("users.department")->get()->groupBy("user_id");
 
         $filename = "all-" . time() . mt_rand(100000000, 999999999) . ".xls";
@@ -383,22 +388,21 @@ EOF
 
         $date = $this->request->date;
 
-        $userAllowExportDepartmentList = UserAllowExportDepartment::query()->where("user_id", $sessionUtils->getUser()->id)->pluck("department")->toArray();
-        $userIdInWhere = "";
-        if (count($userAllowExportDepartmentList)) {
-            $queryBuilder = User::query();
-            foreach ($userAllowExportDepartmentList as $department) {
-                $queryBuilder->orWhere('department', "LIKE", $department . "%");
+        $departmentLikeWhere = "";
+        $departmentLikeValues = [];
+        if ($this->request->type == 1) {
+            $userAllowExportDepartmentList = UserAllowExportDepartment::query()->where("user_id", $sessionUtils->getUser()->id)->pluck("department")->toArray();
+            if ($userAllowExportDepartmentListCount = count($userAllowExportDepartmentList)) {
+                $departmentLikeWhere = str_repeat(" department LIKE ? OR", $userAllowExportDepartmentListCount);
+                $departmentLikeWhere = " AND (" . substr($departmentLikeWhere, 0, strlen($departmentLikeWhere) - 2) . ")";
+                foreach ($userAllowExportDepartmentList as $department) {
+                    $departmentLikeValues[] = $department . "%";
+                }
             }
-            $userIdList = $queryBuilder->pluck("id")->toArray();
-            if (!count($userIdList)) {
-                throw ValidationException::withMessages(["无记录"]);
-            }
-            $userIdInWhere = " AND id IN (" . implode(",", $userIdList) . ")";
         }
         $selectedClassesIn = "";
         $selectedClassesValues = [];
-        if ($this->request->type === 0) {
+        if ($this->request->type == 0) {
             $selectedClassesValues = $this->request->selectedClasses;
             if ($selectedClassesCount = count($selectedClassesValues)) {
                 $valueBinding = str_repeat("? ,", $selectedClassesCount);
@@ -407,12 +411,13 @@ EOF
             }
         }
 
-        $values2Bind = array_merge([$date, $this->request->type], $selectedClassesValues);
+        $values2Bind = array_merge([$date, $this->request->type], $departmentLikeValues, $selectedClassesValues);
 
         /*
         if ($this->request->type != -1) {
         */
-        $notReportedUsers = DB::select("SELECT * FROM `users` WHERE id NOT IN (SELECT user_id FROM `user_daily_health_statuses` WHERE reported_date = ?) AND type = ?" . $userIdInWhere . $selectedClassesIn, $values2Bind);
+        $query = "SELECT * FROM `users` WHERE id NOT IN (SELECT user_id FROM `user_daily_health_statuses` WHERE reported_date = ?) AND type = ?" . $departmentLikeWhere . $selectedClassesIn;
+        $notReportedUsers = DB::select($query, $values2Bind);
         /*
         } else {
             $notReportedUsers = DB::select("SELECT * FROM `users` WHERE id NOT IN (SELECT user_id FROM `user_daily_health_statuses` WHERE reported_date = ?)", [$date]);
@@ -497,15 +502,16 @@ EOF
     {
         $user = $sessionUtils->getUser();
         $exportPermission = ExportUserIdWhiteList::query()->where("user_id", $user->id)->get()->pluck("type", "type")->toArray();
+        $userAllowExportDepartmentCount = UserAllowExportDepartment::query()->where("user_id", $user->id)->count();
         if (array_key_exists(UserType::TEACHER, $exportPermission)) {
             $allowExportTeachers = 2;
-        } else if (UserAllowExportDepartment::query()->where("user_id", $user->id)->count()) {
+        } else if ($userAllowExportDepartmentCount) {
             $allowExportTeachers = 1;
         } else {
             $allowExportTeachers = 0;
         }
 
-        if (array_key_exists(UserType::STUDENT, $exportPermission)) {
+        if (array_key_exists(UserType::STUDENT, $exportPermission) || $userAllowExportDepartmentCount) {
             $allowExportStudents = 2;
         } else if (strlen($sessionUtils->getUserId()) === 8) {
             $allowExportStudents = 1;
