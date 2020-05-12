@@ -72,7 +72,7 @@ class ExportController extends Controller
         if (count($userAllowExportDepartmentList)) {
             $queryBuilder = User::query();
             foreach ($userAllowExportDepartmentList as $department) {
-                $queryBuilder->orWhere('department', "LIKE", "%/" . $department . "%");
+                $queryBuilder->orWhere('department', "LIKE", $department . "%");
             }
             $userIdList = $queryBuilder->pluck("id")->toArray();
             $availableDatesQueryBuilder->whereIn("user_daily_health_statuses.user_id", $userIdList);
@@ -388,7 +388,7 @@ EOF
         if (count($userAllowExportDepartmentList)) {
             $queryBuilder = User::query();
             foreach ($userAllowExportDepartmentList as $department) {
-                $queryBuilder->orWhere('department', "LIKE", "%/" . $department . "%");
+                $queryBuilder->orWhere('department', "LIKE", $department . "%");
             }
             $userIdList = $queryBuilder->pluck("id")->toArray();
             if (!count($userIdList)) {
