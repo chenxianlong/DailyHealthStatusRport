@@ -126,9 +126,9 @@ class UserDailyHealthStatusController extends Controller
                     "card.in_key_places_to" => "离开时间",
                     "card.back_to_dongguan_at" => "返莞时间",
                 ]);
-                $cardValues["in_key_places_from"] = $request->card["in_key_places_from"];
-                $cardValues["in_key_places_to"] = $request->card["in_key_places_to"];
-                $cardValues["back_to_dongguan_at"] = $request->card["back_to_dongguan_at"];
+                $cardValues["in_key_places_from"] = @$request->card["in_key_places_from"];
+                $cardValues["in_key_places_to"] = @$request->card["in_key_places_to"];
+                $cardValues["back_to_dongguan_at"] = @$request->card["back_to_dongguan_at"];
             }
             if (@$request->card["touched_high_risk_people"]) {
                 $this->validate($request, [
@@ -136,7 +136,7 @@ class UserDailyHealthStatusController extends Controller
                 ], [], [
                     "card.touched_high_risk_people_at" => "接触时间",
                 ]);
-                $cardValues["touched_high_risk_people_at"] = $request->card["touched_high_risk_people_at"];
+                $cardValues["touched_high_risk_people_at"] = @$request->card["touched_high_risk_people_at"];
             }
         }
 
