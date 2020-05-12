@@ -6,7 +6,7 @@
                 <el-form-item label="人员类型" required>
                     <el-radio-group v-model="exportReportedType">
                         <el-radio v-if="allowExportTeachers === 2" :label="1">教职工</el-radio>
-                        <el-radio :label="0">学生</el-radio>
+                        <el-radio v-if="allowExportStudents === 2" :label="0">学生</el-radio>
                     </el-radio-group>
                 </el-form-item>
 
