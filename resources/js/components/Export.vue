@@ -2,15 +2,15 @@
     <div>
         <page-title title="导出"/>
         <el-form style="margin: 8px 8px 8px 8px;" v-if="authenticated" label-width="80px" size="small" v-on:submit.native.prevent="() => {}" v-loading="isLoading">
-            <template v-if="allowExportTeachers === 2 || allowExportStudents === 2">
+            <template v-if="allowExportTeachers >= 1 || allowExportStudents >= 1">
                 <el-form-item label="人员类型" required>
                     <el-radio-group v-model="exportReportedType">
-                        <el-radio v-if="allowExportTeachers === 2" :label="1">教职工</el-radio>
-                        <el-radio v-if="allowExportStudents === 2" :label="0">学生</el-radio>
+                        <el-radio v-if="allowExportTeachers >= 1" :label="1">教职工</el-radio>
+                        <el-radio v-if="allowExportStudents >= 1" :label="0">学生</el-radio>
                     </el-radio-group>
                 </el-form-item>
 
-                <el-form-item v-if="exportReportedType === 0" label="班级">
+                <el-form-item v-if="false && exportReportedType === 0" label="班级">
                     <el-select v-model="selectedExportClasses" filterable multiple clearable size="small" placeholder="留空导出全部可访问班级">
                         <el-option v-for="availableClass in availableClasses" :key="availableClass" :label="availableClass" :value="availableClass"/>
                     </el-select>
@@ -54,7 +54,7 @@
                 </el-radio-group>
             </el-form-item>
 
-            <el-form-item v-if="exportNotReportedType === 0" label="班级">
+            <el-form-item v-if="false && exportNotReportedType === 0" label="班级">
                 <el-select v-model="selectedExportNotReportedClasses" filterable multiple clearable size="small" placeholder="留空导出全部可访问班级">
                     <el-option v-for="availableClass in availableClasses" :key="availableClass" :label="availableClass" :value="availableClass"/>
                 </el-select>

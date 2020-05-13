@@ -39,7 +39,7 @@ class FindStudentIdCardNo extends Command
     public function handle()
     {
         DB::insert("INSERT INTO `users` (id_card_no, name, department, type, user_id)
-SELECT cs.id_card_no AS id_card_no, student2_find_id_card_nos.name AS name, cs.class AS department, 0 AS type, cs.no AS user_id
+SELECT cs.id_card_no AS id_card_no, student2_find_id_card_nos.name AS name, cs.class AS department, 0 AS type, cs.no AS user_id 
 FROM `student2_find_id_card_nos`
          INNER JOIN ccdgut_students cs on student2_find_id_card_nos.no = cs.no
 ON DUPLICATE KEY UPDATE users.id = users.id;

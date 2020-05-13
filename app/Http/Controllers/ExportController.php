@@ -62,10 +62,10 @@ class ExportController extends Controller
         ]);
 
         $this->userExportPermissions($sessionUtils, $allowExportTeachers, $allowExportStudents);
-        if ($allowExportTeachers !== 2 && $this->request->type == 1) {
+        if ($allowExportTeachers === 0 && $this->request->type == 1) {
             abort(403, "无导出教职工数据权限");
         }
-        if ($allowExportStudents !== 2 && $this->request->type == 0) {
+        if ($allowExportStudents === 0 && $this->request->type == 0) {
             abort(403, "无导出学生数据权限");
         }
 
@@ -82,12 +82,14 @@ class ExportController extends Controller
         }
 
         $userAllowExportDepartmentList = UserAllowExportDepartment::query()->where("user_id", $sessionUtils->getUser()->id)->pluck("department")->toArray();
-        if (count($userAllowExportDepartmentList)) {
-            $availableDatesQueryBuilder->where(function ($builder) use (&$userAllowExportDepartmentList) {
-                foreach ($userAllowExportDepartmentList as $userAllowExportDepartment) {
-                    $builder->orWhere("users.department", "LIKE", $userAllowExportDepartment . "%");
-                }
-            });
+        if ($this->request->type == 1 && $allowExportTeachers === 1 || $this->request->type == 0 && $allowExportStudents === 1) {
+            if (count($userAllowExportDepartmentList)) {
+                $availableDatesQueryBuilder->where(function ($builder) use (&$userAllowExportDepartmentList) {
+                    foreach ($userAllowExportDepartmentList as $userAllowExportDepartment) {
+                        $builder->orWhere("users.department", "LIKE", $userAllowExportDepartment . "%");
+                    }
+                });
+            }
         }
 
         $availableDates = $availableDatesQueryBuilder->groupBy("reported_date")->orderBy("reported_date")->pluck("reported_date")->toArray();
@@ -103,12 +105,14 @@ class ExportController extends Controller
             $userDailyHealthStatusesQueryBuilder->where("user_daily_health_statuses.reported_date", "<=", $this->request->endAt);
         }
 
-        if (count($userAllowExportDepartmentList)) {
-            $userDailyHealthStatusesQueryBuilder->where(function ($builder) use (&$userAllowExportDepartmentList) {
-                foreach ($userAllowExportDepartmentList as $userAllowExportDepartment) {
-                    $builder->orWhere("users.department", "LIKE", $userAllowExportDepartment . "%");
-                }
-            });
+        if ($this->request->type == 1 && $allowExportTeachers === 1 || $this->request->type == 0 && $allowExportStudents === 1) {
+            if (count($userAllowExportDepartmentList)) {
+                $userDailyHealthStatusesQueryBuilder->where(function ($builder) use (&$userAllowExportDepartmentList) {
+                    foreach ($userAllowExportDepartmentList as $userAllowExportDepartment) {
+                        $builder->orWhere("users.department", "LIKE", $userAllowExportDepartment . "%");
+                    }
+                });
+            }
         }
         $userDailyHealthStatusesQueryBuilder->where("users.type", $this->request->type);
         /*
@@ -413,14 +417,17 @@ EOF
 
         $departmentLikeWhere = "";
         $departmentLikeValues = [];
-        $userAllowExportDepartmentList = UserAllowExportDepartment::query()->where("user_id", $sessionUtils->getUser()->id)->pluck("department")->toArray();
-        if ($userAllowExportDepartmentListCount = count($userAllowExportDepartmentList)) {
-            $departmentLikeWhere = str_repeat(" department LIKE ? OR", $userAllowExportDepartmentListCount);
-            $departmentLikeWhere = " AND (" . substr($departmentLikeWhere, 0, strlen($departmentLikeWhere) - 2) . ")";
-            foreach ($userAllowExportDepartmentList as $department) {
-                $departmentLikeValues[] = $department . "%";
+        if ($this->request->type == 1 && $allowExportTeachers === 1 || $this->request->type == 0 && $allowExportStudents === 1) {
+            $userAllowExportDepartmentList = UserAllowExportDepartment::query()->where("user_id", $sessionUtils->getUser()->id)->pluck("department")->toArray();
+            if ($userAllowExportDepartmentListCount = count($userAllowExportDepartmentList)) {
+                $departmentLikeWhere = str_repeat(" department LIKE ? OR", $userAllowExportDepartmentListCount);
+                $departmentLikeWhere = " AND (" . substr($departmentLikeWhere, 0, strlen($departmentLikeWhere) - 2) . ")";
+                foreach ($userAllowExportDepartmentList as $department) {
+                    $departmentLikeValues[] = $department . "%";
+                }
             }
         }
+        /*
         $selectedClassesIn = "";
         $selectedClassesValues = [];
         if ($this->request->type == 0) {
@@ -433,11 +440,15 @@ EOF
         }
 
         $values2Bind = array_merge([$date, $this->request->type], $departmentLikeValues, $selectedClassesValues);
+        */
+
+        $values2Bind = array_merge([$date, $this->request->type], $departmentLikeValues);
 
         /*
         if ($this->request->type != -1) {
         */
-        $query = "SELECT * FROM `users` WHERE id NOT IN (SELECT user_id FROM `user_daily_health_statuses` WHERE reported_date = ?) AND type = ?" . $departmentLikeWhere . $selectedClassesIn;
+        // $query = "SELECT * FROM `users` WHERE id NOT IN (SELECT user_id FROM `user_daily_health_statuses` WHERE reported_date = ?) AND type = ?" . $departmentLikeWhere . $selectedClassesIn;
+        $query = "SELECT * FROM `users` WHERE id NOT IN (SELECT user_id FROM `user_daily_health_statuses` WHERE reported_date = ?) AND type = ?" . $departmentLikeWhere;
         $notReportedUsers = DB::select($query, $values2Bind);
         /*
         } else {
@@ -532,9 +543,9 @@ EOF
             $allowExportTeachers = 0;
         }
 
-        if (array_key_exists(UserType::STUDENT, $exportPermission) || $userAllowExportDepartmentCount) {
+        if (array_key_exists(UserType::STUDENT, $exportPermission)) {
             $allowExportStudents = 2;
-        } else if (strlen($sessionUtils->getUserId()) === 8) {
+        } else if ($userAllowExportDepartmentCount) {
             $allowExportStudents = 1;
         } else {
             $allowExportStudents = 0;
