@@ -74,8 +74,8 @@ class ExportController extends Controller
         $availableDatesQueryBuilder->join("users", "user_daily_health_statuses.user_id", "=", "users.id")->where("users.type", $this->request->type);
         // }
 
-        if ($this->request->beginAt) {
-            $availableDatesQueryBuilder->where("user_daily_health_statuses.reported_date", ">=", $this->request->beginAt);
+        if ($this->request->startAt) {
+            $availableDatesQueryBuilder->where("user_daily_health_statuses.reported_date", ">=", $this->request->startAt);
         }
         if ($this->request->endAt) {
             $availableDatesQueryBuilder->where("user_daily_health_statuses.reported_date", "<=", $this->request->endAt);
@@ -96,8 +96,8 @@ class ExportController extends Controller
 
         $userDailyHealthStatusesQueryBuilder = UserDailyHealthStatus::query()->join("users", "user_daily_health_statuses.user_id", "=", "users.id");
 
-        if ($this->request->beginAt) {
-            $userDailyHealthStatusesQueryBuilder->where("user_daily_health_statuses.reported_date", ">=", $this->request->beginAt);
+        if ($this->request->startAt) {
+            $userDailyHealthStatusesQueryBuilder->where("user_daily_health_statuses.reported_date", ">=", $this->request->startAt);
         }
         if ($this->request->endAt) {
             $userDailyHealthStatusesQueryBuilder->where("user_daily_health_statuses.reported_date", "<=", $this->request->endAt);
