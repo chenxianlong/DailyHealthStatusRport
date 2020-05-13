@@ -269,7 +269,7 @@ EOF
                         }
                         $columns .= "<td class='text'>" . $familyStatus . "</td>";
                         if ($extra) {
-                            if (property_exists($extra, "today_touch_risk_people")) {
+                            if (property_exists($extra, "today_touce_risk_people")) {
                                 if ($extra->today_touce_risk_people) {
                                     $todayTouchRiskPeople = "是";
                                 } else {
