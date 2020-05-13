@@ -16,6 +16,30 @@
                     </el-select>
                 </el-form-item>
 
+                <el-form-item label="从">
+                    <el-date-picker
+                        v-model="startAt"
+                        type="date"
+                        placeholder="选择日期"
+                        value-format="yyyy-MM-dd"
+                        :picker-options="{
+                        disabledDate: disabledDate,
+                    }">
+                    </el-date-picker>
+                </el-form-item>
+
+                <el-form-item label="到">
+                    <el-date-picker
+                        v-model="endAt"
+                        type="date"
+                        placeholder="选择日期"
+                        value-format="yyyy-MM-dd"
+                        :picker-options="{
+                        disabledDate: disabledDate,
+                    }">
+                    </el-date-picker>
+                </el-form-item>
+
                 <el-form-item>
                     <el-button type="primary" v-on:click="exportAll">导出报告</el-button>
                 </el-form-item>
@@ -46,6 +70,9 @@
                         disabledDate: disabledDate,
                     }">
                 </el-date-picker>
+            </el-form-item>
+
+            <el-form-item>
                 <el-button type="primary" v-on:click="exportNotReported">导出未填人员</el-button>
             </el-form-item>
         </el-form>
@@ -78,6 +105,8 @@
                 exportNotReportedType: null,
                 selectedExportClasses: [],
                 selectedExportNotReportedClasses: [],
+                startAt: null,
+                endAt: null,
                 date: "",
             };
         },
@@ -109,7 +138,7 @@
             },
             exportAll: function () {
                 this.isLoading = true;
-                axios.post("/export/all", {type: this.exportReportedType, selectedClasses: this.selectedExportClasses}).then(this.$apiResponseHandler((data) => {
+                axios.post("/export/all", {type: this.exportReportedType, selectedClasses: this.selectedExportClasses, startAt: this.startAt, endAt: this.endAt}).then(this.$apiResponseHandler((data) => {
                     window.location.href = laravelRoute("export.download", {filename: data.filename, expireAt: data.expireAt, userId: data.userId, salt: data.salt, signature: data.signature});
                 })).catch(this.$axiosErrorHandler).then(() => {
                     this.isLoading = false;

@@ -51,6 +51,14 @@ class ExportController extends Controller
                 "required",
                 Rule::in([0, 1]),
             ],
+            "beginAt" => [
+                "nullable",
+                "date_format:Y-m-d",
+            ],
+            "endAt" => [
+                "nullable",
+                "date_format:Y-m-d",
+            ],
         ]);
 
         $this->userExportPermissions($sessionUtils, $allowExportTeachers, $allowExportStudents);
@@ -66,6 +74,13 @@ class ExportController extends Controller
         $availableDatesQueryBuilder->join("users", "user_daily_health_statuses.user_id", "=", "users.id")->where("users.type", $this->request->type);
         // }
 
+        if ($this->request->beginAt) {
+            $availableDatesQueryBuilder->where("user_daily_health_statuses.reported_date", ">=", $this->request->beginAt);
+        }
+        if ($this->request->endAt) {
+            $availableDatesQueryBuilder->where("user_daily_health_statuses.reported_date", "<=", $this->request->endAt);
+        }
+
         $userAllowExportDepartmentList = UserAllowExportDepartment::query()->where("user_id", $sessionUtils->getUser()->id)->pluck("department")->toArray();
         if (count($userAllowExportDepartmentList)) {
             $availableDatesQueryBuilder->where(function ($builder) use (&$userAllowExportDepartmentList) {
@@ -80,6 +95,14 @@ class ExportController extends Controller
         $dateCount = count($availableDates);
 
         $userDailyHealthStatusesQueryBuilder = UserDailyHealthStatus::query()->join("users", "user_daily_health_statuses.user_id", "=", "users.id");
+
+        if ($this->request->beginAt) {
+            $userDailyHealthStatusesQueryBuilder->where("user_daily_health_statuses.reported_date", ">=", $this->request->beginAt);
+        }
+        if ($this->request->endAt) {
+            $userDailyHealthStatusesQueryBuilder->where("user_daily_health_statuses.reported_date", "<=", $this->request->endAt);
+        }
+
         if (count($userAllowExportDepartmentList)) {
             $userDailyHealthStatusesQueryBuilder->where(function ($builder) use (&$userAllowExportDepartmentList) {
                 foreach ($userAllowExportDepartmentList as $userAllowExportDepartment) {
