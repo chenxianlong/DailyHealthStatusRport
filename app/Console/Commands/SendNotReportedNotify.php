@@ -79,6 +79,7 @@ class SendNotReportedNotify extends Command
                     ++$retryCounter;
                     Common::logException($e);
                     $this->error("#" . $user->id . " " . $user->name . ": " . $e->getMessage());
+                    sleep(1);
                 }
             }
         }
