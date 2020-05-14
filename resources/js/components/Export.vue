@@ -1,6 +1,6 @@
 <template>
     <div>
-        <page-title title="导出"/>
+        <el-divider>导出已填人员健康报告</el-divider>
         <el-form style="margin: 8px 8px 8px 8px;" v-if="authenticated" label-width="80px" size="small" v-on:submit.native.prevent="() => {}" v-loading="isLoading">
             <template v-if="allowExportTeachers >= 1 || allowExportStudents >= 1">
                 <el-form-item label="人员类型" required>
@@ -44,7 +44,7 @@
                     <el-button type="primary" v-on:click="exportAll">导出报告</el-button>
                 </el-form-item>
 
-                <el-divider>OR</el-divider>
+                <el-divider>导出未填人员名单</el-divider>
             </template>
 
             <el-form-item label="人员类型" required>
