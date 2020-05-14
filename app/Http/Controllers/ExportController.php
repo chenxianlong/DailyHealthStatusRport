@@ -88,7 +88,7 @@ class ExportController extends Controller
             if (count($userAllowExportDepartmentList)) {
                 $availableDatesQueryBuilder->where(function ($builder) use (&$userAllowExportDepartmentList) {
                     foreach ($userAllowExportDepartmentList as $userAllowExportDepartment) {
-                        $builder->orWhere("users.department", "LIKE", $userAllowExportDepartment . "%");
+                        $builder->orWhere("users.department", "LIKE", $userAllowExportDepartment);
                     }
                 });
             }
@@ -113,7 +113,7 @@ class ExportController extends Controller
             if (count($userAllowExportDepartmentList)) {
                 $userDailyHealthStatusesQueryBuilder->where(function ($builder) use (&$userAllowExportDepartmentList) {
                     foreach ($userAllowExportDepartmentList as $userAllowExportDepartment) {
-                        $builder->orWhere("users.department", "LIKE", $userAllowExportDepartment . "%");
+                        $builder->orWhere("users.department", "LIKE", $userAllowExportDepartment);
                     }
                 });
             }
@@ -430,7 +430,7 @@ EOF
                 $departmentLikeWhere = str_repeat(" department LIKE ? OR", $userAllowExportDepartmentListCount);
                 $departmentLikeWhere = " AND (" . substr($departmentLikeWhere, 0, strlen($departmentLikeWhere) - 2) . ")";
                 foreach ($userAllowExportDepartmentList as $department) {
-                    $departmentLikeValues[] = $department . "%";
+                    $departmentLikeValues[] = $department;
                 }
             }
         } else if ($this->request->type == 1 && $allowExportTeachers === 3 || $this->request->type == 0 && $allowExportStudents === 3) {
