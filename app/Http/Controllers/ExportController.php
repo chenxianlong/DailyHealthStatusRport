@@ -433,6 +433,9 @@ EOF
                     $departmentLikeValues[] = $department . "%";
                 }
             }
+        } else if ($this->request->type == 1 && $allowExportTeachers === 3 || $this->request->type == 0 && $allowExportStudents === 3) {
+            $departmentLikeWhere = " AND department = ?";
+            $departmentLikeValues[] = $sessionUtils->getUser()->department;
         }
         /*
         $selectedClassesIn = "";
