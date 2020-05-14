@@ -7,6 +7,7 @@ use App\Constants\UserType;
 use App\ExportUserIdWhiteList;
 use App\User;
 use App\UserAllowExportDepartment;
+use App\UserAllowExportSelfDepartment;
 use App\UserDailyHealthStatus;
 use App\UserHealthCard;
 use App\UserHealthReports;
@@ -41,6 +42,7 @@ class ExportController extends Controller
             "availableClasses" => User::query()->select(["department"])->where("type", UserType::STUDENT)->groupBy("department")->pluck("department"),
             "allowExportTeachers" => $allowExportTeachers,
             "allowExportStudents" => $allowExportStudents,
+            "allowExportSelfDepartment" => !is_null(UserAllowExportSelfDepartment::query()->find($sessionUtils->getUser())),
         ]);
     }
 
@@ -90,6 +92,8 @@ class ExportController extends Controller
                     }
                 });
             }
+        } else if ($this->request->type == 1 && $allowExportTeachers === 3 || $this->request->type == 0 && $allowExportStudents === 3) {
+            $availableDatesQueryBuilder->where("users.department", $sessionUtils->getUser()->department);
         }
 
         $availableDates = $availableDatesQueryBuilder->groupBy("reported_date")->orderBy("reported_date")->pluck("reported_date")->toArray();
@@ -113,7 +117,10 @@ class ExportController extends Controller
                     }
                 });
             }
+        } else if ($this->request->type == 1 && $allowExportTeachers === 3 || $this->request->type == 0 && $allowExportStudents === 3) {
+            $userDailyHealthStatusesQueryBuilder->where("users.department", $sessionUtils->getUser()->department);
         }
+
         $userDailyHealthStatusesQueryBuilder->where("users.type", $this->request->type);
         /*
         if ($this->request->type === 0) {
@@ -535,10 +542,13 @@ EOF
         $user = $sessionUtils->getUser();
         $exportPermission = ExportUserIdWhiteList::query()->where("user_id", $user->id)->get()->pluck("type", "type")->toArray();
         $userAllowExportDepartmentCount = UserAllowExportDepartment::query()->where("user_id", $user->id)->count();
+        $userAllowExportSelfDepartment = !is_null(UserAllowExportSelfDepartment::query()->find($sessionUtils->getUser()));
         if (array_key_exists(UserType::TEACHER, $exportPermission)) {
             $allowExportTeachers = 2;
         } else if ($userAllowExportDepartmentCount) {
             $allowExportTeachers = 1;
+        } else if ($user->type === 1 && $userAllowExportSelfDepartment) {
+            $allowExportTeachers = 3;
         } else {
             $allowExportTeachers = 0;
         }
@@ -547,6 +557,8 @@ EOF
             $allowExportStudents = 2;
         } else if ($userAllowExportDepartmentCount) {
             $allowExportStudents = 1;
+        } else if ($user->type === 0 && $userAllowExportSelfDepartment) {
+            $allowExportStudents = 3;
         } else {
             $allowExportStudents = 0;
         }
