@@ -22,6 +22,7 @@
                         type="date"
                         placeholder="选择日期"
                         value-format="yyyy-MM-dd"
+                        :editable="false"
                         :picker-options="{
                         disabledDate: disabledDate,
                     }">
@@ -34,6 +35,7 @@
                         type="date"
                         placeholder="选择日期"
                         value-format="yyyy-MM-dd"
+                        :editable="false"
                         :picker-options="{
                         disabledDate: disabledDate,
                     }">
@@ -66,6 +68,7 @@
                     type="date"
                     placeholder="选择日期"
                     value-format="yyyy-MM-dd"
+                    :editable="false"
                     :picker-options="{
                         disabledDate: disabledDate,
                     }">
@@ -118,6 +121,13 @@
                 this.availableClasses = data.availableClasses;
                 this.allowExportTeachers = data.allowExportTeachers;
                 this.allowExportStudents = data.allowExportStudents;
+                if (this.allowExportTeachers === 1 || this.allowExportTeachers === 2) {
+                    this.exportReportedType = 1;
+                    this.exportNotReportedType = 1;
+                } else {
+                    this.exportReportedType = 0;
+                    this.exportNotReportedType = 0;
+                }
             })).catch(this.$axiosErrorHandler).then(() => {
                 this.isLoading = false;
             })
