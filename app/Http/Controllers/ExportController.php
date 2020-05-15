@@ -64,10 +64,10 @@ class ExportController extends Controller
         ]);
 
         $this->userExportPermissions($sessionUtils, $allowExportTeachers, $allowExportStudents);
-        if ($allowExportTeachers === 0 && $this->request->type == 1) {
+        if (($allowExportTeachers === 0 || $allowExportTeachers === 3) && $this->request->type == 1) {
             abort(403, "无导出教职工数据权限");
         }
-        if ($allowExportStudents === 0 && $this->request->type == 0) {
+        if (($allowExportStudents === 0 || $allowExportStudents === 3) && $this->request->type == 0) {
             abort(403, "无导出学生数据权限");
         }
 

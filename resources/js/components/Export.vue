@@ -1,12 +1,12 @@
 <template>
     <div>
-        <el-divider>导出已填人员健康报告</el-divider>
         <el-form style="margin: 8px 8px 8px 8px;" v-if="authenticated" label-width="80px" size="small" v-on:submit.native.prevent="() => {}" v-loading="isLoading">
-            <template v-if="allowExportTeachers >= 1 || allowExportStudents >= 1">
+            <template v-if="allowExportTeachers === 1 || allowExportTeachers === 2 || allowExportStudents === 1 || allowExportStudents === 2">
+                <el-divider>导出已填人员健康报告</el-divider>
                 <el-form-item label="人员类型" required>
                     <el-radio-group v-model="exportReportedType">
-                        <el-radio v-if="allowExportTeachers >= 1" :label="1">教职工</el-radio>
-                        <el-radio v-if="allowExportStudents >= 1" :label="0">学生</el-radio>
+                        <el-radio v-if="allowExportTeachers === 1 || allowExportTeachers === 2" :label="1">教职工</el-radio>
+                        <el-radio v-if="allowExportStudents === 1 || allowExportStudents === 2" :label="0">学生</el-radio>
                     </el-radio-group>
                 </el-form-item>
 
