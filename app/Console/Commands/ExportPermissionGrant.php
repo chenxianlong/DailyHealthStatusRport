@@ -40,7 +40,12 @@ class ExportPermissionGrant extends Command
      */
     public function handle()
     {
-        $user = User::query()->where("user_id", $this->argument("userNo"))->firstOrFail();
+        $value = $this->argument("userNo");
+        $column = "user_id";
+        if (strlen($value) === 18) {
+            $column = "id_card_no";
+        }
+        $user = User::query()->where($column, $value)->firstOrFail();
         $values = [];
         foreach (explode(",", $this->argument("types")) as $type) {
             if ($type === "") {
