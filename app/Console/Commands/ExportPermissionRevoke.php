@@ -39,7 +39,12 @@ class ExportPermissionRevoke extends Command
      */
     public function handle()
     {
-        $user = User::query()->where("user_id", $this->argument("userNo"))->firstOrFail();
+        $value = $this->argument("userNo");
+        $column = "user_id";
+        if (strlen($value) === 18) {
+            $column = "id_card_no";
+        }
+        $user = User::query()->where($column, $value)->firstOrFail();
         ExportUserIdWhiteList::query()->where("user_id", $user->id)->delete();
         return 0;
     }
