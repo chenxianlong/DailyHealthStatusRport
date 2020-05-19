@@ -15,4 +15,6 @@ interface UserType
     const TEACHER = 1;
 
     const HONFA = 2;
+
+    const LOGISTICS = 3;
 }

@@ -1,13 +1,14 @@
 <template>
     <div>
         <el-form style="margin: 8px 8px 8px 8px;" v-if="authenticated" label-width="80px" size="small" v-on:submit.native.prevent="() => {}" v-loading="isLoading">
-            <template v-if="allowExportTeachers === 1 || allowExportTeachers === 2 || allowExportStudents === 1 || allowExportStudents === 2">
+            <template v-if="allowExportTeachers === 1 || allowExportTeachers === 2 || allowExportStudents === 1 || allowExportStudents === 2 || allowExportHonFa > 0 || allowExportLogistics > 0">
                 <el-divider>导出已填人员健康报告</el-divider>
                 <el-form-item label="人员类型" required>
                     <el-radio-group v-model="exportReportedType">
-                        <el-radio v-if="allowExportTeachers === 1 || allowExportTeachers === 2" :label="1">教职工</el-radio>
-                        <el-radio v-if="allowExportStudents === 1 || allowExportStudents === 2" :label="0">学生</el-radio>
-                        <el-radio v-if="allowExportHonFa === 1 || allowExportHonFa === 2" :label="2">鸿发教育文化集团</el-radio>
+                        <el-radio v-if="allowExportTeachers === 1 || allowExportTeachers === 2" :label="1" class="radio">教职工</el-radio>
+                        <el-radio v-if="allowExportStudents === 1 || allowExportStudents === 2" :label="0" class="radio">学生</el-radio>
+                        <el-radio v-if="allowExportHonFa === 1 || allowExportHonFa === 2" :label="2" class="radio">鸿发教育文化集团</el-radio>
+                        <el-radio v-if="allowExportLogistics === 1 || allowExportLogistics === 2" :label="3" class="radio">后勤</el-radio>
                     </el-radio-group>
                 </el-form-item>
 
@@ -52,9 +53,10 @@
 
             <el-form-item label="人员类型" required>
                 <el-radio-group v-model="exportNotReportedType">
-                    <el-radio v-if="allowExportTeachers !== 0" :label="1">教职工</el-radio>
-                    <el-radio v-if="allowExportStudents !== 0" :label="0">学生</el-radio>
-                    <el-radio v-if="allowExportHonFa !== 0" :label="2">鸿发教育文化集团</el-radio>
+                    <el-radio v-if="allowExportTeachers !== 0" :label="1" class="radio">教职工</el-radio>
+                    <el-radio v-if="allowExportStudents !== 0" :label="0" class="radio">学生</el-radio>
+                    <el-radio v-if="allowExportHonFa !== 0" :label="2" class="radio">鸿发教育文化集团</el-radio>
+                    <el-radio v-if="allowExportLogistics !== 0" :label="3" class="radio">后勤</el-radio>
                 </el-radio-group>
             </el-form-item>
 
@@ -106,6 +108,7 @@
                 allowExportTeachers: false,
                 allowExportStudents: false,
                 allowExportHonFa: false,
+                allowExportLogistics: false,
                 password: "",
                 exportReportedType: null,
                 exportNotReportedType: null,
@@ -125,12 +128,19 @@
                 this.allowExportTeachers = data.allowExportTeachers;
                 this.allowExportStudents = data.allowExportStudents;
                 this.allowExportHonFa = data.allowExportHonFa;
+                this.allowExportLogistics = data.allowExportLogistics;
                 if (this.allowExportTeachers === 1 || this.allowExportTeachers === 2) {
                     this.exportReportedType = 1;
                     this.exportNotReportedType = 1;
-                } else {
+                } else if (this.allowExportStudents) {
                     this.exportReportedType = 0;
                     this.exportNotReportedType = 0;
+                } else if (this.allowExportHonFa) {
+                    this.exportReportedType = 2;
+                    this.exportNotReportedType = 2;
+                } else {
+                    this.exportReportedType = 3;
+                    this.exportNotReportedType = 3;
                 }
             })).catch(this.$axiosErrorHandler).then(() => {
                 this.isLoading = false;
@@ -175,5 +185,8 @@
 </script>
 
 <style scoped>
-
+    .radio {
+        margin-bottom: 10px;
+        display: block;
+    }
 </style>
