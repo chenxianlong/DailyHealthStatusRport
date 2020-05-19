@@ -35,13 +35,14 @@ class ExportController extends Controller
 
     public function status(SessionUtils $sessionUtils)
     {
-        $this->userExportPermissions($sessionUtils, $allowExportTeachers, $allowExportStudents);
+        $this->userExportPermissions($sessionUtils, $allowExportTeachers, $allowExportStudents, $allowExportHonFa);
         return Views::successAPIResponse([
             "authenticated" => true,
             "availableDates" => UserDailyHealthStatus::query()->groupBy("reported_date")->pluck("reported_date", "reported_date"),
             "availableClasses" => User::query()->select(["department"])->where("type", UserType::STUDENT)->groupBy("department")->pluck("department"),
             "allowExportTeachers" => $allowExportTeachers,
             "allowExportStudents" => $allowExportStudents,
+            "allowExportHonFa" => $allowExportHonFa,
             "allowExportSelfDepartment" => !is_null(UserAllowExportSelfDepartment::query()->find($sessionUtils->getUser())),
         ]);
     }
@@ -51,7 +52,7 @@ class ExportController extends Controller
         $this->validate($this->request, [
             "type" => [
                 "required",
-                Rule::in([0, 1]),
+                Rule::in([0, 1, 2]),
             ],
             "beginAt" => [
                 "nullable",
@@ -63,12 +64,15 @@ class ExportController extends Controller
             ],
         ]);
 
-        $this->userExportPermissions($sessionUtils, $allowExportTeachers, $allowExportStudents);
+        $this->userExportPermissions($sessionUtils, $allowExportTeachers, $allowExportStudents, $allowExportHonfa);
         if (($allowExportTeachers === 0 || $allowExportTeachers === 3) && $this->request->type == 1) {
             abort(403, "无导出教职工数据权限");
         }
         if (($allowExportStudents === 0 || $allowExportStudents === 3) && $this->request->type == 0) {
             abort(403, "无导出学生数据权限");
+        }
+        if ($allowExportHonfa !== 2 && $this->request->type == 2) {
+            abort(403, "无导出权限");
         }
 
         $availableDatesQueryBuilder = UserDailyHealthStatus::query();
@@ -408,16 +412,19 @@ EOF
             ],
             "type" => [
                 "required",
-                Rule::in([0, 1]),
+                Rule::in([0, 1, 2]),
             ],
         ]);
 
-        $this->userExportPermissions($sessionUtils, $allowExportTeachers, $allowExportStudents);
+        $this->userExportPermissions($sessionUtils, $allowExportTeachers, $allowExportStudents, $allowExportHonFa);
         if ($allowExportTeachers === 0 && $this->request->type == 1) {
             abort(403, "无导出教师数据权限");
         }
         if ($allowExportStudents === 0 && $this->request->type == 0) {
             abort(403, "无导出学生数据权限");
+        }
+        if ($allowExportHonFa === 0 && $this->request->type == 2) {
+            abort(403);
         }
 
         $date = $this->request->date;
@@ -540,7 +547,7 @@ EOF
         return response()->download($this->storeDirectory . $this->request->filename);
     }
 
-    private function userExportPermissions(SessionUtils $sessionUtils, &$allowExportTeachers, &$allowExportStudents)
+    private function userExportPermissions(SessionUtils $sessionUtils, &$allowExportTeachers, &$allowExportStudents, &$allowExportHonFa)
     {
         $user = $sessionUtils->getUser();
         $exportPermission = ExportUserIdWhiteList::query()->where("user_id", $user->id)->get()->pluck("type", "type")->toArray();
@@ -564,6 +571,12 @@ EOF
             $allowExportStudents = 3;
         } else {
             $allowExportStudents = 0;
+        }
+
+        if (array_key_exists(UserType::HONFA, $exportPermission)) {
+            $allowExportHonFa = 2;
+        } else {
+            $allowExportHonFa = 0;
         }
     }
 }

@@ -7,6 +7,7 @@
                     <el-radio-group v-model="exportReportedType">
                         <el-radio v-if="allowExportTeachers === 1 || allowExportTeachers === 2" :label="1">教职工</el-radio>
                         <el-radio v-if="allowExportStudents === 1 || allowExportStudents === 2" :label="0">学生</el-radio>
+                        <el-radio v-if="allowExportHonFa === 1 || allowExportHonFa === 2" :label="2">鸿发教育文化集团</el-radio>
                     </el-radio-group>
                 </el-form-item>
 
@@ -53,6 +54,7 @@
                 <el-radio-group v-model="exportNotReportedType">
                     <el-radio v-if="allowExportTeachers !== 0" :label="1">教职工</el-radio>
                     <el-radio v-if="allowExportStudents !== 0" :label="0">学生</el-radio>
+                    <el-radio v-if="allowExportHonFa !== 0" :label="2">鸿发教育文化集团</el-radio>
                 </el-radio-group>
             </el-form-item>
 
@@ -103,6 +105,7 @@
                 availableClasses: [],
                 allowExportTeachers: false,
                 allowExportStudents: false,
+                allowExportHonFa: false,
                 password: "",
                 exportReportedType: null,
                 exportNotReportedType: null,
@@ -121,6 +124,7 @@
                 this.availableClasses = data.availableClasses;
                 this.allowExportTeachers = data.allowExportTeachers;
                 this.allowExportStudents = data.allowExportStudents;
+                this.allowExportHonFa = data.allowExportHonFa;
                 if (this.allowExportTeachers === 1 || this.allowExportTeachers === 2) {
                     this.exportReportedType = 1;
                     this.exportNotReportedType = 1;
