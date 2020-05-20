@@ -40,7 +40,12 @@ class SyncUserExportDepartment extends Command
      */
     public function handle()
     {
-        $user = User::query()->where("user_id", $this->argument("userId"))->firstOrFail();
+        $value = $this->argument("userId");
+        $column = "user_id";
+        if (strlen($value) === 18) {
+            $column = "id_card_no";
+        }
+        $user = User::query()->where($column, $value)->firstOrFail();
         $departmentList = explode(";", $this->argument("departments"));
         $values = [];
         foreach ($departmentList as $department) {

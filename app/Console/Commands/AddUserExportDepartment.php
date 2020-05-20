@@ -40,8 +40,13 @@ class AddUserExportDepartment extends Command
      */
     public function handle()
     {
+        $value = $this->argument("userId");
+        $column = "user_id";
+        if (strlen($value) === 18) {
+            $column = "id_card_no";
+        }
         try {
-            $user = User::query()->where("user_id", $this->argument("userId"))->firstOrFail();
+            $user = User::query()->where($column, $value)->firstOrFail();
         } catch (ModelNotFoundException $e) {
             $this->error($this->argument("userId") . " not found.");
             return -1;
