@@ -175,7 +175,12 @@
                 department: "",
                 type: null,
                 form: {
-                    extra: {},
+                    self_status:0,
+                    family_status:0,
+                    extra: {
+                        today_touce_risk_people:0,
+                        today_work_in_school:1,
+                    },
                 },
                 healthCardForm: {},
                 confirm1: false,
