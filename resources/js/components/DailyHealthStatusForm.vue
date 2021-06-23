@@ -144,11 +144,33 @@
                             <el-radio class="radio" :label="5">其他症状</el-radio>
                         </el-radio-group>
                     </el-form-item>
-
-                    <el-form-item v-if="form.self_status === 5" label="请描述本人症状" required>
-                        <el-input v-model="form.self_status_details" type="textarea" maxlength="255" show-word-limit/>
+                    <el-form-item label="本人粤康码状态" required>
+                        <el-radio-group v-model="form.healthcode_status">
+                            <el-radio class="radio" :label="0">绿码</el-radio>
+                            <el-radio class="radio" :label="1">黑码</el-radio>
+                            <el-radio class="radio" :label="2">黄码</el-radio>
+                            <el-radio class="radio" :label="3">红码</el-radio>
+                            <el-radio class="radio" :label="4">无码</el-radio>
+                            <el-radio class="radio" :label="5">码状态有误</el-radio>
+                        </el-radio-group>
                     </el-form-item>
-
+                    <el-form-item v-if="form.healthcode_status === 5" label="请描述本人的实际情况" required>
+                        <el-input v-model="form.healthcode_status_details" type="textarea" maxlength="255" show-word-limit/>
+                    </el-form-item>
+                    <el-form-item label="是否已经完成两次疫苗接种" required>
+                        <el-radio-group v-model="form.vaccine_status">
+                            <el-radio class="radio" :label="0">无接种</el-radio>
+                            <el-radio class="radio" :label="1">完成第一针</el-radio>
+                            <el-radio class="radio" :label="2">完成第二针</el-radio>
+                            <el-radio class="radio" :label="3">完成第三针</el-radio>
+                        </el-radio-group>
+                    </el-form-item>
+                    <el-form-item label="是否处理管控区" required>
+                            <el-radio-group v-model="form.extra.high_risk_region">
+                                <el-radio :label="0">否</el-radio>
+                                <el-radio :label="1">是</el-radio>
+                            </el-radio-group>
+                    </el-form-item>
                     <el-form-item label="同住家庭成员身体情况" required>
                         <el-radio-group v-model="form.family_status">
                             <el-radio class="radio" :label="0">健康，无症状</el-radio>
@@ -218,10 +240,13 @@
                 type: null,
                 form: {
                     self_status:0,
+                    healthcode_status:0,
                     family_status:0,
+                    vaccine_status:2,
                     extra: {
                         today_touce_risk_people:0,
                         today_work_in_school:1,
+                        high_risk_region:0,
                     },
                 },
                 healthCardForm: {},
@@ -280,6 +305,10 @@
                     if (status.self_status > 0 && status.self_status < 5) {
                         status.self_status_details = this.statusCodeMap[status.self_status];
                         status.self_status = 1;
+                    }
+                    if (status.healthcode_status > 0 && status.healthcode_status < 5) {
+                        status.healthcode_status_details = this.statusCodeMap[status.healthcode_status];
+                        status.healthcode_status = 1;
                     }
                     if (status.family_status > 0 && status.family_status < 5) {
                         status.family_status_details = this.statusCodeMap[status.family_status];
