@@ -1,6 +1,48 @@
 <template>
     <div>
-        <page-title title="返校健康卡填报"/>
+    <div>
+            <div>
+                 <p><h2>全国疫情中高风险地区提醒</h2></p>
+            </div>
+            <div>
+                <h3>高风险：1个</h3>
+                <h4>广东省广州市（1个）</h4>
+                <ul>
+                    <li>荔湾区白鹤洞街</li>
+                </ul>
+                <h3>中风险：11个</h3>
+            </div>
+            <div>
+                 <h4><strong>广东省东莞市（2个）</strong></h4>
+                <ul>
+                    <li>南城街道百悦尚城小区2栋</li>
+                    <li>麻涌镇广州新华学院（东莞校区）</li>
+                </ul>
+                <h4>广东省深圳市（1个）</h4>
+                <ul>
+                    <li>宝安区福永街道下十围商住街71号新蓝天公寓</li>
+                </ul>
+                 <h4>广东省广州市（5个）</h4>
+                <ul>
+                    <li>白云区永平街道集贤路集安街3号</li>
+                    <li>白云区永平街道集贤路109号</li>
+                    <li>南沙区珠江街道珠江西一路（142、144、146、148、150号）</li>
+                    <li>南沙区珠江街道发展路、发展横路、灵新大道、珠江二路所包围区域</li>
+                    <li>荔湾区东沙街道新爵村天后西街 9、11、13、16、 18、20、30号所包围区域</li>
+
+                </ul>
+                 <h4>广东省佛山市（2个）</h4>
+                <ul>
+                    <li>南海区桂城街道万科金域名都小区</li>
+                    <li>南海区桂城街道中海锦城国际花园3街3栋</li>
+                </ul>
+                 <h4>广东省湛江市（1个）</h4>
+                <ul>
+                    <li>吴川市覃巴镇下榕村</li>
+                </ul>
+            </div>
+        </div>
+        <page-title title="健康卡填报"/>
         <div style="margin: 8px 8px 8px 8px" v-loading="isLoading">
             <slide-fade-transition>
                 <div v-if="todayReported" style="color: gray; text-align: center; font-size: 20px; padding-top: 80px;">
@@ -24,7 +66,7 @@
                         <el-input v-model="healthCardForm.phone" type="tel"/>
                     </el-form-item>
 
-                    <el-form-item label="现居住地址（填报当日居住地址，具体到门牌号）" required>
+                    <el-form-item label="现居住地址（假期外出，要如实更新当天居住地址）" required>
                         <el-input v-model="healthCardForm.address" type="textarea" maxlength="512" show-word-limit/>
                     </el-form-item>
 
@@ -231,7 +273,7 @@
         },
         methods: {
             submitDailyHealthStatusForm: function () {
-                if (confirm("确定填写无误并提交？")) {
+                if (confirm("离莞一定要如实填报当日地址，确定提交？")) {
                     this.isLoading = true;
                     this.errors = [];
                     let status = _.cloneDeep(this.form);
