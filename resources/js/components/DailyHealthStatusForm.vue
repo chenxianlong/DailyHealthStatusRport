@@ -139,6 +139,9 @@
                             <el-radio class="radio" :label="5">其他症状</el-radio>
                         </el-radio-group>
                     </el-form-item>
+                    <el-form-item v-if="form.self_status === 5" label="请描述本人身体的实际状况" required>
+                        <el-input v-model="form.self_status_details" type="textarea" maxlength="255" show-word-limit/>
+                    </el-form-item>
                     <el-form-item label="本人粤康码状况" required>
                         <el-radio-group v-model="form.health_code_status">
                             <el-radio class="radio" :label="0">绿码</el-radio>
@@ -299,7 +302,7 @@
                         status.self_status_details = this.statusCodeMap[status.self_status];
                         status.self_status = 1;
                     }
-                    if (status.healt_hcode_status > 0 && status.healt_hcode_status < 5) {
+                    if (status.health_code_status > 0 && status.health_code_status < 5) {
                         status.health_code_status_details = this.statusCodeMap[status.health_code_status];
                         status.health_code_status = 1;
                     }

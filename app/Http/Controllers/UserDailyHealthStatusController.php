@@ -157,6 +157,7 @@ class UserDailyHealthStatusController extends Controller
             ]);
             $values["self_status_details"] = $this->request->status["self_status_details"];
         }
+
         if ($values["health_code_status"]) {
             $this->validate($this->request, [
                 "status.health_code_status_details" => "required|max:255",
