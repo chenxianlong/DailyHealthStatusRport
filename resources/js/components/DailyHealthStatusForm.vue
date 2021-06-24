@@ -10,7 +10,7 @@
                 <ul>
                     <li>荔湾区白鹤洞街</li>
                 </ul>
-                <h3>中风险：11个</h3>
+                <h3>中风险：10个</h3>
             </div>
             <div>
                  <h4><strong>广东省东莞市（2个）</strong></h4>
@@ -36,10 +36,7 @@
                     <li>南海区桂城街道万科金域名都小区</li>
                     <li>南海区桂城街道中海锦城国际花园3街3栋</li>
                 </ul>
-                 <h4>广东省湛江市（1个）</h4>
-                <ul>
-                    <li>吴川市覃巴镇下榕村</li>
-                </ul>
+
             </div>
         </div>
         <page-title title="健康卡填报"/>
@@ -74,7 +71,6 @@
                         <el-form-item label="学校的宿舍床位号（请具体到床位号，格式1A101-A，12-101-A）" required>
                             <el-input v-model="healthCardForm.dorm_room" type="text" maxlength="32"/>
                         </el-form-item>
-
 
                         <el-form-item label="假期是否曾前往疫情防控重点地区" required>
                             <el-radio-group v-model="healthCardForm.stayed_in_key_places">
@@ -133,7 +129,6 @@
                         </el-form-item>
                     </template>
 
-
                     <el-form-item label="目前，本人身体状况" required>
                         <el-radio-group v-model="form.self_status">
                             <el-radio class="radio" :label="0">健康，无症状</el-radio>
@@ -144,8 +139,8 @@
                             <el-radio class="radio" :label="5">其他症状</el-radio>
                         </el-radio-group>
                     </el-form-item>
-                    <el-form-item label="本人粤康码状态" required>
-                        <el-radio-group v-model="form.healthcode_status">
+                    <el-form-item label="本人粤康码状况" required>
+                        <el-radio-group v-model="form.health_code_status">
                             <el-radio class="radio" :label="0">绿码</el-radio>
                             <el-radio class="radio" :label="1">黑码</el-radio>
                             <el-radio class="radio" :label="2">黄码</el-radio>
@@ -154,8 +149,8 @@
                             <el-radio class="radio" :label="5">码状态有误</el-radio>
                         </el-radio-group>
                     </el-form-item>
-                    <el-form-item v-if="form.healthcode_status === 5" label="请描述本人的实际情况" required>
-                        <el-input v-model="form.healthcode_status_details" type="textarea" maxlength="255" show-word-limit/>
+                    <el-form-item v-if="form.health_code_status === 5" label="码状态有误，请描述本人的实际情况" required>
+                        <el-input v-model="form.health_code_status_details" type="textarea" maxlength="255" show-word-limit/>
                     </el-form-item>
                     <el-form-item label="是否已经完成两次疫苗接种" required>
                         <el-radio-group v-model="form.vaccine_status">
@@ -165,8 +160,8 @@
                             <el-radio class="radio" :label="3">完成第三针</el-radio>
                         </el-radio-group>
                     </el-form-item>
-                    <el-form-item label="是否处理管控区" required>
-                            <el-radio-group v-model="form.extra.high_risk_region">
+                    <el-form-item label="是否处于疫情封闭区" required>
+                            <el-radio-group v-model="form.high_risk_region_status">
                                 <el-radio :label="0">否</el-radio>
                                 <el-radio :label="1">是</el-radio>
                             </el-radio-group>
@@ -240,13 +235,10 @@
                 type: null,
                 form: {
                     self_status:0,
-                    healthcode_status:0,
                     family_status:0,
-                    vaccine_status:2,
                     extra: {
                         today_touce_risk_people:0,
                         today_work_in_school:1,
-                        high_risk_region:0,
                     },
                 },
                 healthCardForm: {},
@@ -298,7 +290,7 @@
         },
         methods: {
             submitDailyHealthStatusForm: function () {
-                if (confirm("离莞一定要如实填报当日地址，确定提交？")) {
+                if (confirm("新增的几项上报内容要如实填写，确定提交？")) {
                     this.isLoading = true;
                     this.errors = [];
                     let status = _.cloneDeep(this.form);
@@ -306,9 +298,9 @@
                         status.self_status_details = this.statusCodeMap[status.self_status];
                         status.self_status = 1;
                     }
-                    if (status.healthcode_status > 0 && status.healthcode_status < 5) {
-                        status.healthcode_status_details = this.statusCodeMap[status.healthcode_status];
-                        status.healthcode_status = 1;
+                    if (status.healt_hcode_status > 0 && status.healt_hcode_status < 5) {
+                        status.health_code_status_details = this.statusCodeMap[status.health_code_status];
+                        status.health_code_status = 1;
                     }
                     if (status.family_status > 0 && status.family_status < 5) {
                         status.family_status_details = this.statusCodeMap[status.family_status];

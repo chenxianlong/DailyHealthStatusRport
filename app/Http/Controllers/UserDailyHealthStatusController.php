@@ -74,11 +74,17 @@ class UserDailyHealthStatusController extends Controller
             "card.phone" => "required|numeric|digits_between:8,14",
             "card.address" => "required|max:512",
             "status.self_status" => "required",
+            "status.health_code_status"=> "required",
             "status.family_status" => "required",
+            "status.vaccine_status"=> "required",
+            "status.high_risk_region_status"=> "required",
         ], [], [
             "card.address" => "住址",
             "status.self_status" => "自身健康状况",
             "status.family_status" => "家庭成员健康状况",
+            "status.health_code_status"=> "本人粤康码状况",
+            "status.vaccine_status"=> "本人新冠疫苗接种状况",
+            "status.high_risk_region_status"=> "本人是否在疫情隔离区",
         ]);
 
         $cardValues = [
@@ -92,6 +98,9 @@ class UserDailyHealthStatusController extends Controller
             "user_id" => $sessionUtils->getUser()->id,
             "self_status" => intval(!!$this->request->status["self_status"]),
             "family_status" => intval(!!$this->request->status["family_status"]),
+            "health_code_status" => intval(!!$this->request->status["health_code_status"]),
+            "vaccine_status" => intval(!!$this->request->status["vaccine_status"]),
+            "high_risk_region_status" => intval(!!$this->request->status["high_risk_region_status"]),
         ];
 
         if ($sessionUtils->getUser()->type === 0) {
@@ -147,6 +156,14 @@ class UserDailyHealthStatusController extends Controller
                 "status.self_status_details" => "自身异常症状",
             ]);
             $values["self_status_details"] = $this->request->status["self_status_details"];
+        }
+        if ($values["health_code_status"]) {
+            $this->validate($this->request, [
+                "status.health_code_status_details" => "required|max:255",
+            ], [], [
+                "status.health_code_status_details" => "粤康码错误原因描述",
+            ]);
+            $values["health_code_status_details"] = $this->request->status["health_code_status_details"];
         }
 
         if ($values["family_status"]) {
