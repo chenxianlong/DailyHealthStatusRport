@@ -160,10 +160,11 @@
                             <el-radio class="radio" :label="3">完成第三针</el-radio>
                         </el-radio-group>
                     </el-form-item>
-                    <el-form-item label="是否处于疫情封闭区" required>
+                    <el-form-item label="是否处于疫情封闭、封控区" required>
                             <el-radio-group v-model="form.high_risk_region_status">
-                                <el-radio :label="0">否</el-radio>
-                                <el-radio :label="1">是</el-radio>
+                                <el-radio :label="0">正常</el-radio>
+                                <el-radio :label="1">封控区</el-radio>
+                                <el-radio :label="2">封闭区</el-radio>
                             </el-radio-group>
                     </el-form-item>
                     <el-form-item label="同住家庭成员身体情况" required>
