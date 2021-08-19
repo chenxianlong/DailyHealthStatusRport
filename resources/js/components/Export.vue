@@ -81,6 +81,7 @@
 
             <el-form-item>
                 <el-button type="primary" v-on:click="exportNotReported">导出未填人员</el-button>
+                <el-button type="primary" v-on:click="exportReportStatistics">导出填报统计</el-button>
             </el-form-item>
         </el-form>
         <el-form style="margin: 8px 8px 8px 8px;" v-else label-width="80px" size="small" v-loading="isLoading" v-on:submit.native.prevent="authenticate">
@@ -175,6 +176,18 @@
                 }
                 this.isLoading = true;
                 axios.post("/export/notReported", {date: this.date, type: this.exportNotReportedType, selectedClasses: this.selectedExportNotReportedClasses}).then(this.$apiResponseHandler((data) => {
+                    window.location.href = laravelRoute("export.download", {filename: data.filename, expireAt: data.expireAt, userId: data.userId, salt: data.salt, signature: data.signature});
+                })).catch(this.$axiosErrorHandler).then(() => {
+                    this.isLoading = false;
+                });
+            },
+            exportReportStatistics: function () {
+                if (this.date.length === 0) {
+                    this.$errorMessage("请选择日期");
+                    return;
+                }
+                this.isLoading = true;
+                axios.post("/export/reportStatistics", {date: this.date, type: this.exportNotReportedType, selectedClasses: this.selectedExportNotReportedClasses}).then(this.$apiResponseHandler((data) => {
                     window.location.href = laravelRoute("export.download", {filename: data.filename, expireAt: data.expireAt, userId: data.userId, salt: data.salt, signature: data.signature});
                 })).catch(this.$axiosErrorHandler).then(() => {
                     this.isLoading = false;

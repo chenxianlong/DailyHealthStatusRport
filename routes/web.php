@@ -25,6 +25,7 @@ Route::middleware(App\Http\Middleware\WechatWork\AuthenticatedRequired::class . 
         Route::get("/export", "SPAController");
         Route::post("/export/all", "ExportController@exportAll")->name("export.all");
         Route::post("/export/notReported", "ExportController@exportNotReported")->name("export.notReported");
+        Route::post("/export/reportStatistics", "ExportController@exportReportStatistics")->name("export.reportStatistics");
         Route::get("/export/status", "ExportController@status")->name("export.status");
     });
 });

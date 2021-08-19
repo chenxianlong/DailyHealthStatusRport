@@ -407,6 +407,131 @@ EOF
             ->header("Content-Disposition", "attachment; filename=all-" . time() . ".xls");
     }
 
+    public function exportReportStatistics(SessionUtils $sessionUtils)
+    {
+        $this->validate($this->request, [
+            "date" => [
+                "required",
+                "date_format:Y-m-d",
+            ],
+            "type" => [
+                "required",
+                Rule::in([0, 1, 2, 3]),
+            ],
+        ]);
+
+        $this->userExportPermissions($sessionUtils, $allowExportTeachers, $allowExportStudents, $allowExportHonFa, $allowExportLogistics);
+        if ($allowExportTeachers === 0 && $this->request->type == 1) {
+            abort(403, "无导出教师数据权限");
+        }
+        if ($allowExportStudents === 0 && $this->request->type == 0) {
+            abort(403, "无导出学生数据权限");
+        }
+        if ($allowExportHonFa === 0 && $this->request->type == 2) {
+            abort(403);
+        }
+        if ($allowExportLogistics === 0 && $this->request->type == 3) {
+            abort(403);
+        }
+
+        $date = $this->request->date;
+
+        $departmentLikeWhere = "";
+        $departmentLikeValues = [];
+        if ($this->request->type == 1 && $allowExportTeachers === 1 || $this->request->type == 0 && $allowExportStudents === 1) {
+            $userAllowExportDepartmentList = UserAllowExportDepartment::query()->where("user_id", $sessionUtils->getUser()->id)->pluck("department")->toArray();
+            if ($userAllowExportDepartmentListCount = count($userAllowExportDepartmentList)) {
+                $departmentLikeWhere = str_repeat(" department LIKE ? OR", $userAllowExportDepartmentListCount);
+                $departmentLikeWhere = " AND (" . substr($departmentLikeWhere, 0, strlen($departmentLikeWhere) - 2) . ")";
+                foreach ($userAllowExportDepartmentList as $department) {
+                    $departmentLikeValues[] = $department;
+                }
+            }
+        } else if ($this->request->type == 1 && $allowExportTeachers === 3 || $this->request->type == 0 && $allowExportStudents === 3) {
+            $departmentLikeWhere = " AND department = ?";
+            $departmentLikeValues[] = $sessionUtils->getUser()->department;
+        }
+
+        $departmentQuery = "SELECT department, COUNT(*) AS user_count FROM `users` WHERE `type` = ? GROUP BY `department`";
+        $departmentWithTotalUserCount = collect(DB::select($departmentQuery, [$this->request->type]))->pluck("user_count", "department")->toArray();
+
+        $values2Bind = array_merge([$date, $this->request->type], $departmentLikeValues);
+
+        $query = "SELECT COUNT(*) AS user_count, department FROM `users` WHERE id NOT IN (SELECT user_id FROM `user_daily_health_statuses` WHERE reported_date = ?) AND type = ? " . $departmentLikeWhere . " GROUP BY `department`";
+        $notReportedUserCount = collect(DB::select($query, $values2Bind))->pluck("user_count", "department");
+
+        $filename = "not-reported-" . $date . "-" . time() . mt_rand(100000000, 999999999) . ".xls";
+        $filePath = $this->storeDirectory . $filename;
+        $fp = fopen($filePath, "w");
+
+        $query = "SELECT department, COUNT(*) AS user_count FROM `users` JOIN `user_daily_health_statuses` ON users.id = user_daily_health_statuses.user_id WHERE `reported_date` = ? AND health_code_status IN (1, 2, 3) GROUP BY department";
+        $highRiskUserCount = collect(DB::select($query, [$date]))->pluck("user_count", "department")->toArray();
+
+        ini_set("max_execution_time", 60);
+
+        fwrite($fp, <<<EOF
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<style>
+    .text{
+        mso-number-format:"\@";
+    }
+</style>
+</head>
+<body>
+EOF
+        );
+        fwrite($fp, <<<EOF
+<table border="1">
+<thead>
+<tr>
+    <th>部门/班级</th>
+    <th>总人数</th>
+    <th>未填报人数</th>
+    <th>填报率</th>
+    <th>重点人群</th>
+</tr>
+</thead>
+<tbody>
+EOF
+        );
+
+        foreach ($departmentWithTotalUserCount as $department => $totalUser) {
+            fwrite($fp, "<tr>");
+            fwrite($fp, "<td class='text'>" . $department . "</td>");
+            fwrite($fp, "<td class='text'>" . $totalUser . "</td>");
+            fwrite($fp, "<td class='text'>" . $notReportedUserCount[$department] . "</td>");
+            fwrite($fp, "<td class='text'>" . number_format($notReportedUserCount[$department] / $totalUser * 100, "2") . "%</td>");
+            fwrite($fp, "<td class='text'>" . (array_key_exists($department, $highRiskUserCount) ? $highRiskUserCount[$department] : 0) . "</td>");
+            fwrite($fp, "</tr>");
+        }
+
+        fwrite($fp, <<<EOF
+</tbody>
+</table>
+</body>
+</html>
+EOF
+        );
+
+        fflush($fp);
+        fclose($fp);
+
+        return Views::successAPIResponse([
+            "filename" => $filename,
+            "expireAt" => $expireAt = (time() + 600),
+            "userId" => $sessionUtils->getUser()->id,
+            "salt" => $salt = base64_encode(random_bytes(8)),
+            "signature" => sha1($filename . $expireAt . $sessionUtils->getUser()->id . $salt . env("HR_EXPORT_PASSWORD")),
+        ]);
+        return
+            response($fullPageContent)
+                ->header("Cache-Control", "no-cache, no-store, must-revalidate")
+                ->header("Content-type", "application/vnd.ms-excel")
+                ->header("Content-Disposition", "attachment; filename=report-statistics-" . $date . ".xls");
+    }
+
     public function exportNotReported(SessionUtils $sessionUtils)
     {
         $this->validate($this->request, [
