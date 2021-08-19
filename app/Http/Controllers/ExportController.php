@@ -503,7 +503,7 @@ EOF
             fwrite($fp, "<td class='text'>" . $department . "</td>");
             fwrite($fp, "<td class='text'>" . $totalUser . "</td>");
             fwrite($fp, "<td class='text'>" . $notReportedUserCountValue . "</td>");
-            fwrite($fp, "<td class='text'>" . number_format($totalUser - $notReportedUserCountValue / $totalUser * 100, "2") . "%</td>");
+            fwrite($fp, "<td class='text'>" . number_format(($totalUser - $notReportedUserCountValue) / $totalUser * 100, "2") . "%</td>");
             fwrite($fp, "<td class='text'>" . (array_key_exists($department, $highRiskUserCount) ? $highRiskUserCount[$department] : 0) . "</td>");
             fwrite($fp, "</tr>");
         }
