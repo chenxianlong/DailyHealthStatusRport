@@ -458,7 +458,7 @@ EOF
         $values2Bind = array_merge([$date, $this->request->type], $departmentLikeValues);
 
         $query = "SELECT COUNT(*) AS user_count, department FROM `users` WHERE id NOT IN (SELECT user_id FROM `user_daily_health_statuses` WHERE reported_date = ?) AND type = ? " . $departmentLikeWhere . " GROUP BY `department`";
-        $notReportedUserCount = collect(DB::select($query, $values2Bind))->pluck("user_count", "department");
+        $notReportedUserCount = collect(DB::select($query, $values2Bind))->pluck("user_count", "department")->toArray();
 
         $filename = "not-reported-" . $date . "-" . time() . mt_rand(100000000, 999999999) . ".xls";
         $filePath = $this->storeDirectory . $filename;
