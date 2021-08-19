@@ -460,7 +460,7 @@ EOF
         $query = "SELECT COUNT(*) AS user_count, department FROM `users` WHERE id NOT IN (SELECT user_id FROM `user_daily_health_statuses` WHERE reported_date = ?) AND type = ? " . $departmentLikeWhere . " GROUP BY `department`";
         $notReportedUserCount = collect(DB::select($query, $values2Bind))->pluck("user_count", "department")->toArray();
 
-        $filename = "not-reported-" . $date . "-" . time() . mt_rand(100000000, 999999999) . ".xls";
+        $filename = "report-statistics-" . $date . "-" . time() . mt_rand(100000000, 999999999) . ".xls";
         $filePath = $this->storeDirectory . $filename;
         $fp = fopen($filePath, "w");
 
@@ -526,11 +526,6 @@ EOF
             "salt" => $salt = base64_encode(random_bytes(8)),
             "signature" => sha1($filename . $expireAt . $sessionUtils->getUser()->id . $salt . env("HR_EXPORT_PASSWORD")),
         ]);
-        return
-            response($fullPageContent)
-                ->header("Cache-Control", "no-cache, no-store, must-revalidate")
-                ->header("Content-type", "application/vnd.ms-excel")
-                ->header("Content-Disposition", "attachment; filename=report-statistics-" . $date . ".xls");
     }
 
     public function exportNotReported(SessionUtils $sessionUtils)
